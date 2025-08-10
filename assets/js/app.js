@@ -1,0 +1,238 @@
+import { fetchAndParseSheet } from "./fetchSheet.js"; // Import the new function
+
+export let recentMedications =
+  JSON.parse(localStorage.getItem("recentMedications")) || [];
+export let lastResults = [];
+export let fullMedicationData = []; // Global variable to store the full dataset
+
+export function setFullMedicationData(data) {
+  fullMedicationData = data;
+}
+
+// Remove top-level declarations for resultsContainer and searchInput
+// const resultsContainer = document.getElementById("results-container");
+// const searchInput = document.getElementById("searchBox");
+
+export function renderResults(results, container) {
+  container.innerHTML = "";
+  if (results.length === 0) {
+    container.innerHTML = "<p>No results found.</p>";
+    return;
+  }
+
+  let html = "";
+  results.forEach((result) => {
+    const { item } = result;
+    const classNames = ["result-item"]; // Start with base class
+    if (item.is_quota) {
+      classNames.push("quota-item"); // Add quota-item if applicable
+    }
+
+    html += `
+      <div class="${classNames.join(" ")}" data-generic-name="${item["Generic Name"]}" data-is-quota="${item.is_quota}">
+          <h3>${item["Generic Name"]}</h3>
+          <p><strong>Category:</strong> ${item.Category}</p>
+          <p><strong>Group:</strong> ${item["FUKKM System/Group"]}</p>
+          ${item.is_quota ? '<p class="quota-status"><strong>This is a Quota Item.</strong></p>' : ""}
+      </div>
+    `;
+  });
+  container.innerHTML = html;
+
+  // Re-attach event listeners after innerHTML is set
+  container.querySelectorAll(".result-item").forEach((div) => {
+    div.addEventListener("click", (e) => {
+      showDrugDetails(e.currentTarget.dataset.genericName, container, e.currentTarget.dataset.isQuota === 'true');
+    });
+  });
+}
+
+export function showDrugDetails(genericName, container, isQuota) {
+  // Now takes genericName
+  // Find the full item from the global fullMedicationData
+  const item = fullMedicationData.find(
+    (med) => med["Generic Name"] === genericName,
+  );
+
+  if (!item) {
+    return;
+  }
+
+  const resultsContainer = document.getElementById("results-container");
+  resultsContainer.classList.remove("hidden"); // Ensure results container is visible
+  container.innerHTML = "";
+  const div = document.createElement("div");
+  div.classList.add("drug-details-view"); // Add a base class for styling
+  if (isQuota) {
+    div.classList.add("quota-details-view"); // Add specific class for quota items
+  }
+  let detailsHtml = `<button id="backButton">Back to results</button><h3>${item["Generic Name"]}</h3>`;
+  for (const key in item) {
+    if (Object.prototype.hasOwnProperty.call(item, key)) {
+      detailsHtml += `<p><strong>${key}:</strong> ${item[key]}</p>`;
+    }
+  }
+
+  div.innerHTML = detailsHtml;
+  container.appendChild(div);
+
+  document.getElementById("backButton").addEventListener("click", () => {
+    const currentSearchInput = document.getElementById("searchBox");
+    if (currentSearchInput.value.trim() === "") {
+      resultsContainer.innerHTML = "";
+      resultsContainer.classList.add("hidden");
+    } else {
+      renderResults(lastResults, container);
+    }
+  });
+
+  addRecentMedication(item); // Add the full item to recent medications
+}
+
+export function addRecentMedication(item) {
+  // Remove if already exists to avoid duplicates and move to the top
+  recentMedications = recentMedications.filter(
+    (med) => med["Generic Name"] !== item["Generic Name"],
+  );
+  recentMedications.unshift(item);
+  // Keep only the 5 most recent
+  if (recentMedications.length > 5) {
+    recentMedications.pop();
+  }
+  localStorage.setItem("recentMedications", JSON.stringify(recentMedications));
+  renderRecentMedications();
+}
+
+export function renderRecentMedications() {
+  const recentMedicationsContainer = document.getElementById(
+    "recent-medications-container",
+  );
+
+  recentMedicationsContainer.innerHTML = "";
+  if (recentMedications.length > 0) {
+    const h3 = document.createElement("h3");
+    h3.textContent = "Recently Viewed";
+    recentMedicationsContainer.appendChild(h3);
+
+    const clearButton = document.createElement("button");
+    clearButton.textContent = "Clear";
+    clearButton.id = "clearRecentButton";
+    clearButton.addEventListener("click", () => {
+      recentMedications = [];
+      localStorage.removeItem("recentMedications");
+      renderRecentMedications();
+    });
+    recentMedicationsContainer.appendChild(clearButton);
+
+    const recentItemsWrapper = document.createElement("div");
+    recentItemsWrapper.classList.add("recent-items-wrapper");
+    recentMedicationsContainer.appendChild(recentItemsWrapper); // Append wrapper to container
+
+    recentMedications.forEach((item) => {
+      const div = document.createElement("div");
+      div.classList.add("recent-item");
+      div.textContent = item["Generic Name"];
+      div.addEventListener("click", () => {
+        const resultsContainer = document.getElementById("results-container");
+        // Pass the Generic Name to showDrugDetails
+        showDrugDetails(item["Generic Name"], resultsContainer);
+      });
+      recentItemsWrapper.appendChild(div); // Append items to wrapper
+    });
+  }
+}
+
+export function initSearch(data) {
+  // Export initSearch
+  const fuse = new Fuse(data, {
+    // data here is the lightweight searchData
+    keys: ["Generic Name", "Brand", "FUKKM System/Group", "Category"],
+    threshold: 0.1, // Reduced for potentially faster search, but less fuzzy matching
+    limit: 10,
+  });
+
+  const searchInput = document.getElementById("searchBox"); // Get reference inside initSearch
+  const resultsContainer = document.getElementById("results-container"); // Get reference inside initSearch
+
+  // Debounce function
+  const debounce = (func, delay) => {
+    let timeout;
+    return function executed(...args) {
+      const context = this;
+      const later = () => {
+        timeout = null;
+        func.apply(context, args);
+      };
+      clearTimeout(timeout);
+      timeout = setTimeout(later, delay);
+    };
+  };
+
+  const debouncedSearch = debounce((searchTerm) => {
+    if (searchTerm.trim() === "") {
+      resultsContainer.innerHTML = "";
+      resultsContainer.classList.add("hidden");
+      return;
+    }
+    resultsContainer.classList.remove("hidden");
+    lastResults = fuse.search(searchTerm);
+    renderResults(lastResults, resultsContainer);
+  }, 300);
+
+  searchInput.addEventListener("input", (e) => {
+    debouncedSearch(e.target.value);
+  });
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  // Dark Mode Toggle
+  const darkModeToggle = document.getElementById("darkModeToggle");
+  const darkModeIcon = document.getElementById("darkModeIcon");
+  const body = document.body;
+
+  // Function to update the icon
+  const updateDarkModeIcon = () => {
+    if (body.classList.contains("dark-mode")) {
+      darkModeIcon.textContent = '🌙'; // Moon icon for dark mode
+    } else {
+      darkModeIcon.textContent = '☀️'; // Sun icon for light mode
+    }
+  };
+
+  // Load saved preference
+  const savedTheme = localStorage.getItem("theme");
+  if (savedTheme) {
+    body.classList.add(savedTheme);
+  } else if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+    // Check for OS preference if no saved theme
+    body.classList.add("dark-mode");
+  }
+  updateDarkModeIcon(); // Set initial icon
+
+  darkModeToggle.addEventListener("click", () => {
+    body.classList.toggle("dark-mode");
+    if (body.classList.contains("dark-mode")) {
+      localStorage.setItem("theme", "dark-mode");
+    } else {
+      localStorage.removeItem("theme"); // Remove item to default to OS preference or light
+    }
+    updateDarkModeIcon(); // Update icon after toggle
+  });
+
+  renderRecentMedications();
+
+  const googleSheetCsvUrl =
+    "https://docs.google.com/spreadsheets/d/1YZOSxZXQriBlMBgSZaeizQ3zkunaspARZ-0ZgaZpHMk/export?format=csv&gid=1786132140";
+
+  fetchAndParseSheet(googleSheetCsvUrl).then((allData) => {
+    fullMedicationData = allData; // Store the full dataset globally
+    const searchData = allData.map((item) => ({
+      "Generic Name": item["Generic Name"],
+      "Brand": item.Brand,
+      "Category": item.Category,
+      "FUKKM System/Group": item["FUKKM System/Group"],
+      is_quota: item.is_quota, // Keep is_quota for lightweight search
+    }));
+    initSearch(searchData);
+  });
+});

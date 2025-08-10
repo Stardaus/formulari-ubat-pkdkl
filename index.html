@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>District Formulary Search</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="assets/css/style.css" />
+  </head>
+  <body>
+    <header>
+      <h1>District Formulary Search</h1>
+      <button id="darkModeToggle"><span id="darkModeIcon"></span></button>
+    </header>
+    <main>
+      <div class="search-container">
+        <input type="text" id="searchBox" placeholder="Search for a drug..." />
+      </div>
+      <div id="recent-medications-container">
+        <!-- Recently viewed items will be rendered here by app.js -->
+      </div>
+      <div id="results-container" class="hidden"></div>
+    </main>
+    <script src="https://cdn.jsdelivr.net/npm/fuse.js/dist/fuse.min.js"></script>
+    <script src="https://unpkg.com/papaparse@5.3.0/papaparse.min.js"></script>
+    <script type="module" src="assets/js/app.js"></script>
+  </body>
+</html>

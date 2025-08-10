@@ -1,0 +1,212 @@
+:root {
+  --bg-color-light: #f8f8f8;
+  --bg-color-main: #ffffff;
+  --text-color-primary: #333333;
+  --text-color-secondary: #555555;
+  --border-color: #e0e0e0;
+  --hover-color: #f0f0f0;
+  --recent-item-bg: #e0e0e0;
+  --recent-item-hover: #cccccc;
+}
+
+body.dark-mode {
+  --bg-color-light: #2c2c2c;
+  --bg-color-main: #3a3a3a;
+  --text-color-primary: #f5f5f5;
+  --text-color-secondary: #cccccc;
+  --border-color: #555555;
+  --hover-color: #4a4a4a;
+  --recent-item-bg: #555555;
+  --recent-item-hover: #666666;
+}
+
+body {
+  font-family: "Inter", sans-serif;
+  margin: 0;
+  padding: 20px;
+  background-color: var(--bg-color-light);
+  color: var(--text-color-primary);
+  line-height: 1.6;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  position: relative; /* Needed for absolute positioning of toggle */
+}
+
+header {
+  text-align: center;
+  margin-bottom: 30px;
+  padding: 20px 0;
+  position: relative; /* Needed for absolute positioning of toggle */
+}
+
+h1 {
+  font-size: 2.5em;
+  color: var(--text-color-primary);
+}
+
+main {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: var(--bg-color-main);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+}
+
+.search-container {
+  margin-bottom: 20px;
+}
+
+#searchBox {
+  width: 100%;
+  padding: 12px 15px;
+  font-size: 1.1em;
+  border: 1px solid var(--border-color);
+  border-radius: 5px;
+  box-sizing: border-box; /* Include padding in width */
+  background-color: var(--bg-color-main);
+  color: var(--text-color-primary);
+}
+
+#searchBox:focus {
+  outline: none;
+  border-color: #2196f3;
+  box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.2);
+}
+
+#results-container {
+  background-color: var(--bg-color-main);
+  border: 1px solid var(--border-color);
+  border-radius: 5px;
+  padding: 15px;
+  margin-top: 20px;
+}
+
+#results-container.hidden {
+  display: none;
+}
+
+.result-item {
+  cursor: pointer;
+  padding: 12px;
+  border-bottom: 1px solid var(--border-color);
+  transition: background-color 0.2s ease;
+}
+
+.result-item:last-child {
+  border-bottom: none;
+}
+
+.result-item:hover {
+  background-color: var(--hover-color);
+}
+
+.quota-item {
+  background-color: #fff8e1;
+  border-left: 4px solid #ffc107;
+  padding-left: 8px; /* Adjust padding for border */
+}
+
+body.dark-mode .quota-item {
+  background-color: #5c4a00; /* Darker yellow/brown for contrast */
+  border-left-color: #ffeb3b; /* Brighter amber for visibility */
+}
+
+.drug-details-view.quota-details-view {
+  background-color: #fff8e1; /* Same as quota-item for consistency */
+  border-left: 4px solid #ffc107;
+  padding-left: 8px;
+}
+
+body.dark-mode .drug-details-view.quota-details-view {
+  background-color: #5c4a00; /* Same as dark mode quota-item */
+  border-left-color: #ffeb3b;
+}
+
+.quota-status {
+  font-weight: bold;
+  color: #ffc107;
+}
+
+body.dark-mode .quota-status {
+  color: #ffeb3b; /* Brighter amber for visibility */
+}
+
+#backButton {
+  margin-bottom: 15px;
+  padding: 10px 20px;
+  background-color: #2196f3;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1em;
+  transition: background-color 0.2s ease;
+}
+
+#backButton:hover {
+  background-color: #1976d2;
+}
+
+#recent-medications-container {
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+#recent-medications-container h3 {
+  margin-top: 0;
+  margin-bottom: 10px;
+  color: var(--text-color-secondary);
+}
+
+.recent-items-wrapper {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.recent-item {
+  cursor: pointer;
+  padding: 8px 12px;
+  background-color: var(--recent-item-bg);
+  color: var(--text-color-primary);
+  border-radius: 20px;
+  transition: background-color 0.2s ease;
+}
+
+.recent-item:hover {
+  background-color: var(--recent-item-hover);
+}
+
+#clearRecentButton {
+  margin-left: 10px;
+  padding: 8px 12px;
+  background-color: #f44336;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 0.9em;
+  transition: background-color 0.2s ease;
+}
+
+#clearRecentButton:hover {
+  background-color: #d32f2f;
+}
+
+#darkModeToggle {
+  background: none;
+  border: none;
+  font-size: 2em; /* Make icon larger */
+  cursor: pointer;
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  color: var(--text-color-primary); /* Use theme color for icon */
+  transition: color 0.3s ease;
+  padding: 0; /* Remove padding */
+}
+
+#darkModeToggle:hover {
+  color: #2196f3; /* Highlight on hover */
+  background-color: transparent; /* Ensure no background on hover */
+}
