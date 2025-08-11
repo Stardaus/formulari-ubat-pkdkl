@@ -244,9 +244,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const savedTheme = localStorage.getItem("theme");
   if (savedTheme) {
     body.classList.add(savedTheme);
-  } else if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
-    // Check for OS preference if no saved theme
-    body.classList.add("dark-mode");
+  } else {
+    // If no saved theme, default to light mode, regardless of OS preference
+    body.classList.remove("dark-mode");
   }
 
   darkModeToggle.addEventListener("click", () => {
