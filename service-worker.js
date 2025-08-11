@@ -1,4 +1,4 @@
-const CACHE_NAME = 'formulary-cache-v1';
+const CACHE_NAME = 'formulary-cache-v3'; // Increment cache version
 const urlsToCache = [
   '/',
   '/index.html',
@@ -7,8 +7,8 @@ const urlsToCache = [
   '/assets/js/fetchSheet.js',
   'https://cdn.jsdelivr.net/npm/fuse.js/dist/fuse.min.js',
   'https://unpkg.com/papaparse@5.3.0/papaparse.min.js',
-  'https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap',
-  'https://fonts.gstatic.com/s/inter/v12/UcC73FwrK3iLTeHuS_fvQtMwCp50KnMa1ZL7W0Q5nw.woff2' // Example font file
+  'https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap',
+  'https://fonts.gstatic.com/s/roboto/v27/KFOmCnqEu92Fr1Mu4mxK.woff2' // Example font file
 ];
 
 self.addEventListener('install', event => {
@@ -17,19 +17,6 @@ self.addEventListener('install', event => {
       .then(cache => {
         console.log('Opened cache');
         return cache.addAll(urlsToCache);
-      })
-  );
-});
-
-self.addEventListener('fetch', event => {
-  event.respondWith(
-    caches.match(event.request)
-      .then(response => {
-        // Cache hit - return response
-        if (response) {
-          return response;
-        }
-        return fetch(event.request);
       })
   );
 });
@@ -46,5 +33,24 @@ self.addEventListener('activate', event => {
         })
       );
     })
+  );
+});
+
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
+});
+
+self.addEventListener('fetch', event => {
+  event.respondWith(
+    caches.match(event.request)
+      .then(response => {
+        // Cache hit - return response
+        if (response) {
+          return response;
+        }
+        return fetch(event.request);
+      })
   );
 });

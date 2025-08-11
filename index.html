@@ -7,7 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap"
       rel="stylesheet"
     />
     <link rel="stylesheet" href="assets/css/style.css" />
@@ -25,11 +25,17 @@
   <body>
     <header>
       <h1>District Formulary Search</h1>
-      <button id="darkModeToggle"><span id="darkModeIcon"></span></button>
+      <button id="darkModeToggle">
+        <svg class="toggle-icon" width="40" height="20" viewBox="0 0 40 20">
+          <rect class="toggle-bg" width="40" height="20" rx="10"/>
+          <circle class="toggle-circle" cx="10" cy="10" r="8"/>
+        </svg>
+      </button>
     </header>
     <main>
       <div class="search-container">
         <input type="text" id="searchBox" placeholder="Search for a drug..." />
+        <button id="clearSearchButton" aria-label="Clear search">✕</button>
       </div>
       <div id="recent-medications-container">
         <!-- Recently viewed items will be rendered here by app.js -->

@@ -110,19 +110,24 @@ export function renderRecentMedications() {
 
   recentMedicationsContainer.innerHTML = "";
   if (recentMedications.length > 0) {
+    const headerWrapper = document.createElement("div");
+    headerWrapper.classList.add("recent-header-wrapper");
+
     const h3 = document.createElement("h3");
     h3.textContent = "Recently Viewed";
-    recentMedicationsContainer.appendChild(h3);
+    headerWrapper.appendChild(h3);
 
     const clearButton = document.createElement("button");
-    clearButton.textContent = "Clear";
+    clearButton.textContent = "✕";
     clearButton.id = "clearRecentButton";
+    clearButton.setAttribute("aria-label", "Clear recently viewed");
     clearButton.addEventListener("click", () => {
       recentMedications = [];
       localStorage.removeItem("recentMedications");
       renderRecentMedications();
     });
-    recentMedicationsContainer.appendChild(clearButton);
+    h3.appendChild(clearButton);
+    recentMedicationsContainer.appendChild(headerWrapper);
 
     const recentItemsWrapper = document.createElement("div");
     recentItemsWrapper.classList.add("recent-items-wrapper");
@@ -153,6 +158,7 @@ export function initSearch(data) {
 
   const searchInput = document.getElementById("searchBox"); // Get reference inside initSearch
   const resultsContainer = document.getElementById("results-container"); // Get reference inside initSearch
+  const clearSearchButton = document.getElementById("clearSearchButton");
 
   // Debounce function
   const debounce = (func, delay) => {
@@ -172,45 +178,67 @@ export function initSearch(data) {
     if (searchTerm.trim() === "") {
       resultsContainer.innerHTML = "";
       resultsContainer.classList.add("hidden");
+      clearSearchButton.style.display = "none";
       return;
     }
     resultsContainer.classList.remove("hidden");
     lastResults = fuse.search(searchTerm);
     renderResults(lastResults, resultsContainer);
+    clearSearchButton.style.display = "block";
   }, 300);
 
   searchInput.addEventListener("input", (e) => {
     debouncedSearch(e.target.value);
+  });
+
+  clearSearchButton.addEventListener("click", () => {
+    searchInput.value = "";
+    resultsContainer.innerHTML = "";
+    resultsContainer.classList.add("hidden");
+    clearSearchButton.style.display = "none";
+    searchInput.focus();
   });
 }
 
 document.addEventListener("DOMContentLoaded", () => {
   // Register Service Worker
   if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/service-worker.js')
-        .then(registration => {
-          console.log('ServiceWorker registration successful with scope: ', registration.scope);
-        })
-        .catch(err => {
-          console.log('ServiceWorker registration failed: ', err);
+    let newWorker;
+    navigator.serviceWorker.register('/service-worker.js').then(registration => {
+      registration.addEventListener('updatefound', () => {
+        newWorker = registration.installing;
+        newWorker.addEventListener('statechange', () => {
+          if (newWorker.state === 'installed') {
+            if (navigator.serviceWorker.controller) {
+              // new update available
+              showUpdateNotification();
+            }
+          }
         });
+      });
     });
+
+    function showUpdateNotification() {
+      const notification = document.createElement('div');
+      notification.className = 'update-notification';
+      notification.innerHTML = `
+        <span>A new version is available.</span>
+        <button id="refresh-button">Refresh</button>
+      `;
+      document.body.appendChild(notification);
+
+      document.getElementById('refresh-button').addEventListener('click', () => {
+        if (newWorker) {
+          newWorker.postMessage({ type: 'SKIP_WAITING' });
+        }
+        window.location.reload();
+      });
+    }
   }
 
   // Dark Mode Toggle
   const darkModeToggle = document.getElementById("darkModeToggle");
-  const darkModeIcon = document.getElementById("darkModeIcon");
   const body = document.body;
-
-  // Function to update the icon
-  const updateDarkModeIcon = () => {
-    if (body.classList.contains("dark-mode")) {
-      darkModeIcon.textContent = '🌙'; // Moon icon for dark mode
-    } else {
-      darkModeIcon.textContent = '☀️'; // Sun icon for light mode
-    }
-  };
 
   // Load saved preference
   const savedTheme = localStorage.getItem("theme");
@@ -220,7 +248,6 @@ document.addEventListener("DOMContentLoaded", () => {
     // Check for OS preference if no saved theme
     body.classList.add("dark-mode");
   }
-  updateDarkModeIcon(); // Set initial icon
 
   darkModeToggle.addEventListener("click", () => {
     body.classList.toggle("dark-mode");
@@ -229,7 +256,6 @@ document.addEventListener("DOMContentLoaded", () => {
     } else {
       localStorage.removeItem("theme"); // Remove item to default to OS preference or light
     }
-    updateDarkModeIcon(); // Update icon after toggle
   });
 
   renderRecentMedications();
