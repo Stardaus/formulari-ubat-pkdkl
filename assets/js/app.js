@@ -42,7 +42,11 @@ export function renderResults(results, container) {
   // Re-attach event listeners after innerHTML is set
   container.querySelectorAll(".result-item").forEach((div) => {
     div.addEventListener("click", (e) => {
-      showDrugDetails(e.currentTarget.dataset.genericName, container, e.currentTarget.dataset.isQuota === 'true');
+      showDrugDetails(
+        e.currentTarget.dataset.genericName,
+        container,
+        e.currentTarget.dataset.isQuota === "true",
+      );
     });
   });
 }
@@ -67,11 +71,11 @@ export function showDrugDetails(genericName, container, isQuota) {
     div.classList.add("quota-details-view"); // Add specific class for quota items
   }
   let detailsHtml = `<button id="backButton">Back to results</button><h3>${item["Generic Name"]}</h3>`;
-  for (const key in item) {
-    if (Object.prototype.hasOwnProperty.call(item, key)) {
+  Object.keys(item).forEach((key) => {
+    if (Object.hasOwn(item, key)) {
       detailsHtml += `<p><strong>${key}:</strong> ${item[key]}</p>`;
     }
-  }
+  });
 
   div.innerHTML = detailsHtml;
   container.appendChild(div);
@@ -147,7 +151,7 @@ export function renderRecentMedications() {
   }
 }
 
-export function initSearch(data) {
+export function initSearch(data, resultsContainer) {
   // Export initSearch
   const fuse = new Fuse(data, {
     // data here is the lightweight searchData
@@ -156,8 +160,7 @@ export function initSearch(data) {
     limit: 10,
   });
 
-  const searchInput = document.getElementById("searchBox"); // Get reference inside initSearch
-  const resultsContainer = document.getElementById("results-container"); // Get reference inside initSearch
+  const searchInput = document.getElementById("searchBox");
   const clearSearchButton = document.getElementById("clearSearchButton");
 
   // Debounce function
@@ -202,37 +205,41 @@ export function initSearch(data) {
 
 document.addEventListener("DOMContentLoaded", () => {
   // Register Service Worker
-  if ('serviceWorker' in navigator) {
+  if ("serviceWorker" in navigator) {
     let newWorker;
-    navigator.serviceWorker.register('/service-worker.js').then(registration => {
-      registration.addEventListener('updatefound', () => {
-        newWorker = registration.installing;
-        newWorker.addEventListener('statechange', () => {
-          if (newWorker.state === 'installed') {
-            if (navigator.serviceWorker.controller) {
-              // new update available
-              showUpdateNotification();
+    navigator.serviceWorker
+      .register("/service-worker.js")
+      .then((registration) => {
+        registration.addEventListener("updatefound", () => {
+          newWorker = registration.installing;
+          newWorker.addEventListener("statechange", () => {
+            if (newWorker.state === "installed") {
+              if (navigator.serviceWorker.controller) {
+                // new update available
+                showUpdateNotification();
+              }
             }
-          }
+          });
         });
       });
-    });
 
     function showUpdateNotification() {
-      const notification = document.createElement('div');
-      notification.className = 'update-notification';
+      const notification = document.createElement("div");
+      notification.className = "update-notification";
       notification.innerHTML = `
         <span>A new version is available.</span>
         <button id="refresh-button">Refresh</button>
       `;
       document.body.appendChild(notification);
 
-      document.getElementById('refresh-button').addEventListener('click', () => {
-        if (newWorker) {
-          newWorker.postMessage({ type: 'SKIP_WAITING' });
-        }
-        window.location.reload();
-      });
+      document
+        .getElementById("refresh-button")
+        .addEventListener("click", () => {
+          if (newWorker) {
+            newWorker.postMessage({ type: "SKIP_WAITING" });
+          }
+          window.location.reload();
+        });
     }
   }
 
@@ -260,18 +267,68 @@ document.addEventListener("DOMContentLoaded", () => {
 
   renderRecentMedications();
 
-  const googleSheetCsvUrl =
-    "https://docs.google.com/spreadsheets/d/1YZOSxZXQriBlMBgSZaeizQ3zkunaspARZ-0ZgaZpHMk/export?format=csv&gid=1786132140";
+  const { googleSheetCsvUrl } = {
+    googleSheetCsvUrl:
+      "https://docs.google.com/spreadsheets/d/1YZOSxZXQriBlMBgSZaeizQ3zkunaspARZ-0ZgaZpHMk/export?format=csv&gid=1786132140",
+  };
 
   fetchAndParseSheet(googleSheetCsvUrl).then((allData) => {
     fullMedicationData = allData; // Store the full dataset globally
+
+    // Transform fullMedicationData to the format expected by renderResults
+    const initialDisplayData = fullMedicationData.map((item) => ({ item }));
+
+    const resultsContainer = document.getElementById("results-container");
+    renderResults(initialDisplayData, resultsContainer); // Display all medications on initial load
+
     const searchData = allData.map((item) => ({
       "Generic Name": item["Generic Name"],
-      "Brand": item.Brand,
-      "Category": item.Category,
+      Brand: item.Brand,
+      Category: item.Category,
       "FUKKM System/Group": item["FUKKM System/Group"],
       is_quota: item.is_quota, // Keep is_quota for lightweight search
     }));
-    initSearch(searchData);
+    initSearch(searchData, resultsContainer);
+
+    // Show All Button functionality
+    const showAllButton = document.getElementById("showAllButton");
+    showAllButton.addEventListener("click", () => {
+      const searchInput = document.getElementById("searchBox");
+      searchInput.value = ""; // Clear search input
+
+      if (resultsContainer.classList.contains("hidden")) {
+        // If hidden, show the list
+        resultsContainer.classList.remove("hidden");
+        renderResults(
+          fullMedicationData.map((item) => ({ item })),
+          resultsContainer,
+        ); // Display all medications
+      } else {
+        // If visible, hide the list
+        resultsContainer.innerHTML = "";
+        resultsContainer.classList.add("hidden");
+      }
+    });
+
+    // Show Quota Button functionality
+    const showQuotaButton = document.getElementById("showQuotaButton");
+    showQuotaButton.addEventListener("click", () => {
+      const searchInput = document.getElementById("searchBox");
+      searchInput.value = ""; // Clear search input
+
+      if (resultsContainer.classList.contains("hidden")) {
+        // If hidden, show the list
+        resultsContainer.classList.remove("hidden");
+        const quotaMedications = fullMedicationData.filter(item => item.is_quota);
+        renderResults(
+          quotaMedications.map((item) => ({ item })),
+          resultsContainer,
+        ); // Display only quota medications
+      } else {
+        // If visible, hide the list
+        resultsContainer.innerHTML = "";
+        resultsContainer.classList.add("hidden");
+      }
+    });
   });
 });

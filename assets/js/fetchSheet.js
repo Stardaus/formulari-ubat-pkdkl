@@ -25,10 +25,26 @@ export function fetchAndParseSheet(sheetUrl) {
                 return;
               }
               // Process data to add is_quota boolean
-              const processedData = results.data.map((row) => ({
-                ...row,
-                is_quota: row.is_quota === "TRUE",
-              }));
+              const processedData = results.data
+                .map((row) => {
+                  const isQuotaBoolean = row.is_quota === "TRUE";
+                  return {
+                    ...row,
+                    is_quota: isQuotaBoolean,
+                  };
+                })
+                .sort((a, b) => {
+                  // Sort alphabetically by "Generic Name"
+                  const nameA = a["Generic Name"].toUpperCase();
+                  const nameB = b["Generic Name"].toUpperCase();
+                  if (nameA < nameB) {
+                    return -1;
+                  }
+                  if (nameA > nameB) {
+                    return 1;
+                  }
+                  return 0;
+                });
               resolve(processedData);
             },
             error: (err) => {

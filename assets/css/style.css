@@ -32,7 +32,9 @@ body {
   background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23e0e0e0' fill-opacity='0.4'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
   color: var(--text-color-primary);
   line-height: 1.6;
-  transition: background-color 0.3s ease, color 0.3s ease;
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease;
   position: relative; /* Needed for absolute positioning of toggle */
 }
 
@@ -284,35 +286,27 @@ body.dark-mode .toggle-icon .toggle-circle {
   background-color: #01579b;
 }
 
-.update-notification {
-  position: fixed;
-  bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%);
+.button-group {
+  display: flex;
+  justify-content: center; /* Center buttons horizontally */
+  gap: 10px; /* Space between buttons */
+  margin-top: 15px; /* Space from search box */
+  margin-bottom: 20px; /* Space below the buttons */
+}
+
+.button-group button {
+  flex: 1; /* Distribute space equally */
+  padding: 10px 15px;
   background-color: var(--primary-color);
   color: white;
-  padding: 15px 20px;
-  border-radius: 5px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-  display: flex;
-  align-items: center;
-  z-index: 1000;
-}
-
-.update-notification span {
-  margin-right: 15px;
-}
-
-#refresh-button {
-  background-color: var(--primary-color-dark);
-  color: white;
   border: none;
-  padding: 8px 12px;
   border-radius: 5px;
+  font-size: 1em;
   cursor: pointer;
   transition: background-color 0.2s ease;
+  text-align: center; /* Center the text */
 }
 
-#refresh-button:hover {
-  background-color: #01579b;
+.button-group button:hover {
+  background-color: var(--primary-color-dark);
 }

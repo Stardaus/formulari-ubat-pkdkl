@@ -1,4 +1,4 @@
-import fetchAndParseSheet from "../../assets/js/fetchSheet.js"; // Import the new function
+import { fetchAndParseSheet } from "../../assets/js/fetchSheet.js"; // Import the new function
 
 const mockCsvData = `
 "Generic Name","Brand","FUKKM System/Group","MDC","NEML","Method of Purchase","Category","Indications","Prescribing Restrictions","Dosage","Adverse Reaction","Contraindications","Interactions","Precautions","is_quota"
@@ -9,14 +9,64 @@ const mockCsvData = `
 describe("Data Fetching and Parsing with fetchAndParseSheet (PapaParse)", () => {
   let originalFetch;
   let consoleErrorSpy;
+  let originalPapa; // Added for Papa mock
 
   beforeAll(() => {
     // Mock console.error to prevent Jest from failing on expected errors
     consoleErrorSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+
+    // Mock Papa.parse
+    originalPapa = global.Papa;
+    global.Papa = {
+      parse: jest.fn((csvString, config) => {
+        let parsedData = [];
+        let errors = [];
+
+        if (
+          csvString.includes(`"Generic Name","Brand","Category","is_quota"`)
+        ) {
+          // Mock for the main test case
+          parsedData = [
+            {
+              "Generic Name": "Drug A",
+              Brand: "Brand A",
+              Category: "A/KK",
+              is_quota: "TRUE",
+            },
+            {
+              "Generic Name": "Drug B",
+              Brand: "Brand B",
+              Category: "B",
+              is_quota: "FALSE",
+            },
+            {
+              "Generic Name": "Drug C",
+              Brand: "Brand C",
+              Category: "A/KK",
+              is_quota: "TRUE",
+            },
+          ];
+        } else if (csvString.includes(`"malformed,csv"`)) {
+          // Mock for malformed CSV test case
+          parsedData = [];
+          errors = [{ type: "ParseError", code: "UndetectableDelimiter" }];
+        } else {
+          // Default parsing for other cases if needed, or throw an error
+          // For now, we'll just return empty for unexpected CSV
+          parsedData = [];
+        }
+
+        if (config.complete) {
+          config.complete({ data: parsedData, errors: errors });
+        }
+        return { data: parsedData, errors: errors };
+      }),
+    };
   });
 
   afterAll(() => {
     consoleErrorSpy.mockRestore();
+    global.Papa = originalPapa; // Restore original Papa
   });
 
   beforeEach(() => {

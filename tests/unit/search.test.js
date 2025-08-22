@@ -99,12 +99,14 @@ describe("Search functionality with Fuse.js", () => {
   });
 
   beforeEach(() => {
+    jest.useFakeTimers(); // Enable fake timers for debounce testing
     // Set up a minimal DOM for testing
     originalDocumentBody = document.body.innerHTML; // Save original body
     document.body.innerHTML = `
       <input type="text" id="searchBox" />
       <div id="results-container"></div>
       <div id="recent-medications-container"></div>
+      <button id="clearSearchButton"></button>
     `;
     searchInput = document.getElementById("searchBox");
     resultsContainer = document.getElementById("results-container");
@@ -123,6 +125,7 @@ describe("Search functionality with Fuse.js", () => {
   test("should display search results when a match is found", () => {
     searchInput.value = "Drug A";
     searchInput.dispatchEvent(new Event("input"));
+    jest.runAllTimers(); // Advance timers for debounce
 
     expect(resultsContainer.innerHTML).toContain("<h3>Drug A</h3>");
     expect(resultsContainer.classList.contains("hidden")).toBe(false);
@@ -131,6 +134,7 @@ describe("Search functionality with Fuse.js", () => {
   test("should display 'No results found.' when no match is found", () => {
     searchInput.value = "NonExistentDrug";
     searchInput.dispatchEvent(new Event("input"));
+    jest.runAllTimers(); // Advance timers for debounce
 
     expect(resultsContainer.innerHTML).toContain("<p>No results found.</p>");
     expect(resultsContainer.classList.contains("hidden")).toBe(false);
@@ -140,11 +144,13 @@ describe("Search functionality with Fuse.js", () => {
     // First, make sure there are results
     searchInput.value = "Drug A";
     searchInput.dispatchEvent(new Event("input"));
+    jest.runAllTimers(); // Advance timers for debounce
     expect(resultsContainer.innerHTML).toContain("<h3>Drug A</h3>");
 
     // Then, clear the search box
     searchInput.value = "";
     searchInput.dispatchEvent(new Event("input"));
+    jest.runAllTimers(); // Advance timers for debounce
 
     expect(resultsContainer.innerHTML).toBe("");
     expect(resultsContainer.classList.contains("hidden")).toBe(true);
@@ -153,6 +159,7 @@ describe("Search functionality with Fuse.js", () => {
   test("should highlight quota items", () => {
     searchInput.value = "Drug C";
     searchInput.dispatchEvent(new Event("input"));
+    jest.runAllTimers(); // Advance timers for debounce
 
     // Get the rendered item element
     const quotaItemElement = resultsContainer.querySelector(".result-item");
@@ -165,6 +172,7 @@ describe("Search functionality with Fuse.js", () => {
   test("should show full details when a search result is clicked", () => {
     searchInput.value = "Drug A";
     searchInput.dispatchEvent(new Event("input"));
+    jest.runAllTimers(); // Advance timers for debounce
 
     const resultItem = resultsContainer.querySelector(".result-item");
     resultItem.click(); // Simulate click
@@ -186,5 +194,90 @@ describe("Search functionality with Fuse.js", () => {
     expect(resultsContainer.innerHTML).toContain("<h3>Drug B</h3>");
     expect(resultsContainer.innerHTML).toContain("Full Detail B");
     expect(resultsContainer.classList.contains("hidden")).toBe(false);
+  });
+});
+
+describe("Data Fetching and Sorting", () => {
+  let originalPapa;
+
+  beforeAll(() => {
+    originalPapa = global.Papa;
+    global.Papa = {
+      parse: jest.fn((csvString, config) => {
+        // Simple mock for Papa.parse
+        const lines = csvString.trim().split("\n");
+        const header = lines[0].split(",").map((h) => h.replace(/"/g, ""));
+        const data = lines.slice(1).map((line) => {
+          const values = line.split(",").map((v) => v.replace(/"/g, ""));
+          const obj = {};
+          header.forEach((h, i) => {
+            let value = values[i];
+            // Convert "TRUE"/"FALSE" strings to booleans
+            obj[h] = value;
+          });
+          return obj;
+        });
+        // Simulate PapaParse's complete callback
+        if (config.complete) {
+          config.complete({ data: data, errors: [] });
+        }
+        return { data: data, errors: [] };
+      }),
+    };
+  });
+
+  afterAll(() => {
+    global.Papa = originalPapa;
+  });
+
+  // Mock the global fetch function
+  const mockFetchSuccess = (csvData) => {
+    global.fetch = jest.fn(() =>
+      Promise.resolve({
+        ok: true,
+        text: () => Promise.resolve(csvData),
+      }),
+    );
+  };
+
+  test("should fetch and sort medication data alphabetically by Generic Name", async () => {
+    const unsortedCsv = `Generic Name,Category,FUKKM System/Group,is_quota,Brand
+Drug C,Category C,Group 3,FALSE,Brand C
+Drug A,Category A,Group 1,FALSE,Brand A
+Drug B,Category B,Group 2,TRUE,Brand B`;
+
+    mockFetchSuccess(unsortedCsv);
+
+    // Dynamically import fetchAndParseSheet to ensure we get the latest version
+    // after mocking fetch.
+    const { fetchAndParseSheet } = require("../../assets/js/fetchSheet.js");
+
+    const sortedData = await fetchAndParseSheet(
+      "http://mock-google-sheet-url.com",
+    );
+
+    expect(sortedData).toEqual([
+      {
+        "Generic Name": "Drug A",
+        Category: "Category A",
+        "FUKKM System/Group": "Group 1",
+        is_quota: false,
+        Brand: "Brand A",
+      },
+      {
+        "Generic Name": "Drug B",
+        Category: "Category B",
+        "FUKKM System/Group": "Group 2",
+        is_quota: true,
+        Brand: "Brand B",
+      },
+      {
+        "Generic Name": "Drug C",
+        Category: "Category C",
+        "FUKKM System/Group": "Group 3",
+        is_quota: false,
+        Brand: "Brand C",
+      },
+    ]);
   });
 });

@@ -11,24 +11,35 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="assets/css/style.css" />
-    <link rel="manifest" href="/manifest.json">
+    <link rel="manifest" href="/manifest.json" />
     <!-- Apple Touch Icon (for iOS) -->
-    <link rel="apple-touch-icon" href="/assets/images/apple-touch-icon.png">
-    <link rel="apple-touch-icon" sizes="180x180" href="/assets/images/apple-touch-icon-180x180.png">
-    <link rel="apple-touch-icon" sizes="152x152" href="/assets/images/apple-touch-icon-152x152.png">
+    <link rel="apple-touch-icon" href="/assets/images/apple-touch-icon.png" />
+    <link
+      rel="apple-touch-icon"
+      sizes="180x180"
+      href="/assets/images/apple-touch-icon-180x180.png"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="152x152"
+      href="/assets/images/apple-touch-icon-152x152.png"
+    />
 
     <!-- Apple-specific meta tags -->
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Formulary">
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="black-translucent"
+    />
+    <meta name="apple-mobile-web-app-title" content="Formulary" />
   </head>
   <body>
     <header>
       <h1>District Formulary Search</h1>
       <button id="darkModeToggle">
         <svg class="toggle-icon" width="40" height="20" viewBox="0 0 40 20">
-          <rect class="toggle-bg" width="40" height="20" rx="10"/>
-          <circle class="toggle-circle" cx="10" cy="10" r="8"/>
+          <rect class="toggle-bg" width="40" height="20" rx="10" />
+          <circle class="toggle-circle" cx="10" cy="10" r="8" />
         </svg>
       </button>
     </header>
@@ -39,6 +50,14 @@
       </div>
       <div id="recent-medications-container">
         <!-- Recently viewed items will be rendered here by app.js -->
+      </div>
+      <div class="button-group">
+        <button id="showAllButton" aria-label="Show all medications">
+          Show All Medications
+        </button>
+        <button id="showQuotaButton" aria-label="Show all quota medications">
+          Show Quota Medications
+        </button>
       </div>
       <div id="results-container" class="hidden"></div>
     </main>
