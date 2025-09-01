@@ -337,4 +337,23 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
   });
+
+  // Disclaimer Modal
+  const disclaimerModal = document.getElementById("disclaimer-modal");
+  const disclaimerButton = document.getElementById("disclaimer-button");
+  const closeButton = document.getElementsByClassName("close-button")[0];
+
+  disclaimerButton.onclick = function() {
+    disclaimerModal.style.display = "block";
+  }
+
+  closeButton.onclick = function() {
+    disclaimerModal.style.display = "none";
+  }
+
+  window.onclick = function(event) {
+    if (event.target == disclaimerModal) {
+      disclaimerModal.style.display = "none";
+    }
+  }
 });

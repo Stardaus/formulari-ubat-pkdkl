@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{{ page.title }} | Formulari Ubat PKD Kuala Langat (unofficial)</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/assets/css/style.css" />
+    <link rel="manifest" href="/manifest.json" />
+    <!-- Apple Touch Icon (for iOS) -->
+    <link rel="apple-touch-icon" href="/assets/images/apple-touch-icon.png" />
+    <link
+      rel="apple-touch-icon"
+      sizes="180x180"
+      href="/assets/images/apple-touch-icon-180x180.png"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="152x152"
+      href="/assets/images/apple-touch-icon-152x152.png"
+    />
+
+    <!-- Apple-specific meta tags -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="black-translucent"
+    />
+    <meta name="apple-mobile-web-app-title" content="Formulari PKD KL" />
+  </head>
+  <body>
+    <header>
+      <h1>Formulari Ubat PKD Kuala Langat (unofficial)</h1>
+      <button id="darkModeToggle">
+        <svg class="toggle-icon" width="40" height="20" viewBox="0 0 40 20">
+          <rect class="toggle-bg" width="40" height="20" rx="10" />
+          <circle class="toggle-circle" cx="10" cy="10" r="8" />
+        </svg>
+      </button>
+    </header>
+    <main>
+      {{ content }}
+    </main>
+
+    <div id="disclaimer-button">Disclaimer</div>
+
+    <div id="disclaimer-modal" class="modal">
+      <div class="modal-content">
+        <span class="close-button">&times;</span>
+        <h2>Important: Medical Information Disclaimer</h2>
+        <p>This District Drug Catalogue application is intended for use only by qualified and licensed healthcare professionals as a supplementary reference tool. It is not a substitute for professional clinical judgment, diagnosis, or treatment. While every effort is made to ensure the accuracy and timeliness of the information regarding formularies, brands, and quotas, the data may not be exhaustive and is subject to change without notice. Users must independently verify all critical information—including but not limited to drug indications, dosages, contraindications, and contract details—with official sources such as the latest Formulary Ubat KKM (FUKKM), pharmacy department circulars, and other clinical guidelines before making any prescribing decisions. The developers and administrators of this application accept no responsibility or liability for any errors, omissions, or for any clinical outcomes resulting from the use of this information.</p>
+      </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/fuse.js/dist/fuse.min.js"></script>
+    <script src="https://unpkg.com/papaparse@5.3.0/papaparse.min.js"></script>
+    <script type="module" src="/assets/js/app.js"></script>
+  </body>
+</html>

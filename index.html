@@ -1,68 +1,22 @@
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Formulari Ubat PKD Kuala Langat (unofficial)</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap"
-      rel="stylesheet"
-    />
-    <link rel="stylesheet" href="assets/css/style.css" />
-    <link rel="manifest" href="/manifest.json" />
-    <!-- Apple Touch Icon (for iOS) -->
-    <link rel="apple-touch-icon" href="/assets/images/apple-touch-icon.png" />
-    <link
-      rel="apple-touch-icon"
-      sizes="180x180"
-      href="/assets/images/apple-touch-icon-180x180.png"
-    />
-    <link
-      rel="apple-touch-icon"
-      sizes="152x152"
-      href="/assets/images/apple-touch-icon-152x152.png"
-    />
+---
+layout: default
+title: Home
+---
 
-    <!-- Apple-specific meta tags -->
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta
-      name="apple-mobile-web-app-status-bar-style"
-      content="black-translucent"
-    />
-    <meta name="apple-mobile-web-app-title" content="Formulari PKD KL" />
-  </head>
-  <body>
-    <header>
-      <h1>Formulari Ubat PKD Kuala Langat (unofficial)</h1>
-      <button id="darkModeToggle">
-        <svg class="toggle-icon" width="40" height="20" viewBox="0 0 40 20">
-          <rect class="toggle-bg" width="40" height="20" rx="10" />
-          <circle class="toggle-circle" cx="10" cy="10" r="8" />
-        </svg>
-      </button>
-    </header>
-    <main>
-      <div class="search-container">
-        <input type="text" id="searchBox" placeholder="Search for a drug..." />
-        <button id="clearSearchButton" aria-label="Clear search">✕</button>
-      </div>
-      <div id="recent-medications-container">
-        <!-- Recently viewed items will be rendered here by app.js -->
-      </div>
-      <div class="button-group">
-        <button id="showAllButton" aria-label="Show all medications">
-          Show All Medications
-        </button>
-        <button id="showQuotaButton" aria-label="Show all quota medications">
-          Show Quota Medications
-        </button>
-      </div>
-      <div id="results-container" class="hidden"></div>
-    </main>
-    <script src="https://cdn.jsdelivr.net/npm/fuse.js/dist/fuse.min.js"></script>
-    <script src="https://unpkg.com/papaparse@5.3.0/papaparse.min.js"></script>
-    <script type="module" src="assets/js/app.js"></script>
-  </body>
-</html>
+<div class="search-container">
+  <input type="text" id="searchBox" placeholder="Search for a drug..." />
+  <button id="clearSearchButton" aria-label="Clear search">✕</button>
+</div>
+<div id="recent-medications-container">
+  <!-- Recently viewed items will be rendered here by app.js -->
+</div>
+<div class="button-group">
+  <button id="showAllButton" aria-label="Show all medications">
+    Show All Medications
+  </button>
+  <button id="showQuotaButton" aria-label="Show all quota medications">
+    Show Quota Medications
+  </button>
+</div>
+<div id="results-container" class="hidden"></div>
+
