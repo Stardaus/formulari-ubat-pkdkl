@@ -340,10 +340,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Disclaimer Modal
   const disclaimerModal = document.getElementById("disclaimer-modal");
-  const disclaimerButton = document.getElementById("disclaimer-button");
+  const openDisclaimer = document.getElementById("open-disclaimer");
   const closeButton = document.getElementsByClassName("close-button")[0];
 
-  disclaimerButton.onclick = function() {
+  openDisclaimer.onclick = function(e) {
+    e.preventDefault();
     disclaimerModal.style.display = "block";
   }
 
