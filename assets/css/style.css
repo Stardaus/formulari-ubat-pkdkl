@@ -324,13 +324,13 @@ body.dark-mode .toggle-icon .toggle-circle {
   text-align: center;
   cursor: pointer;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-  z-index: 1000;
+  z-index: 1;
 }
 
 .modal {
   display: none; /* Hidden by default */
   position: fixed; /* Stay in place */
-  z-index: 1001; /* Sit on top */
+  z-index: 2; /* Sit on top */
   left: 0;
   top: 0;
   width: 100%; /* Full width */
@@ -362,6 +362,9 @@ body.dark-mode .toggle-icon .toggle-circle {
 .close-button:hover,
 .close-button:focus {
   color: var(--text-color-primary);
+  text-decoration: none;
+  cursor: pointer;
+}-color-primary);
   text-decoration: none;
   cursor: pointer;
 }
