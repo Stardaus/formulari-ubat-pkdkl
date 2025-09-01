@@ -204,9 +204,27 @@ export function initSearch(data, resultsContainer) {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
+  let newWorker;
+
+  // Function to show the update notification
+  function showUpdateNotification() {
+    const notification = document.createElement("div");
+    notification.className = "update-notification";
+    notification.innerHTML = `
+      <span>A new version is available.</span>
+      <button id="refresh-button">Refresh</button>
+    `;
+    document.body.appendChild(notification);
+
+    document.getElementById("refresh-button").addEventListener("click", () => {
+      if (newWorker) {
+        newWorker.postMessage({ type: "SKIP_WAITING" });
+      }
+    });
+  }
+
   // Register Service Worker
   if ("serviceWorker" in navigator) {
-    let newWorker;
     navigator.serviceWorker
       .register("/service-worker.js")
       .then((registration) => {
@@ -215,32 +233,20 @@ document.addEventListener("DOMContentLoaded", () => {
           newWorker.addEventListener("statechange", () => {
             if (newWorker.state === "installed") {
               if (navigator.serviceWorker.controller) {
-                // new update available
+                // New update available
                 showUpdateNotification();
               }
             }
           });
         });
-      });
 
-    function showUpdateNotification() {
-      const notification = document.createElement("div");
-      notification.className = "update-notification";
-      notification.innerHTML = `
-        <span>A new version is available.</span>
-        <button id="refresh-button">Refresh</button>
-      `;
-      document.body.appendChild(notification);
-
-      document
-        .getElementById("refresh-button")
-        .addEventListener("click", () => {
-          if (newWorker) {
-            newWorker.postMessage({ type: "SKIP_WAITING" });
-          }
+        let refreshing;
+        navigator.serviceWorker.addEventListener("controllerchange", () => {
+          if (refreshing) return;
           window.location.reload();
+          refreshing = true;
         });
-    }
+      });
   }
 
   // Dark Mode Toggle
