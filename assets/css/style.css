@@ -370,3 +370,22 @@ body.dark-mode .toggle-icon .toggle-circle {
   text-decoration: none;
   cursor: pointer;
 }
+
+/* MAL Brand Link styles */
+.mal-brand-link {
+  display: inline-block;
+  background-color: var(--recent-item-bg);
+  color: var(--text-color-primary);
+  padding: 5px 10px;
+  border-radius: 15px;
+  text-decoration: none;
+  margin-right: 5px;
+  margin-bottom: 5px;
+  font-size: 0.9em;
+  transition: background-color 0.2s ease;
+}
+
+.mal-brand-link:hover {
+  background-color: var(--recent-item-hover);
+  color: var(--text-color-primary);
+}

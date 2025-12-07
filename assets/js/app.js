@@ -79,7 +79,23 @@ export function showDrugDetails(genericName, container, isQuota) {
   }
   let detailsHtml = `<button id="backButton">Back to results</button><h3>${item["Generic Name"]}</h3>`;
   Object.keys(item).forEach((key) => {
-    if (Object.hasOwn(item, key) && key !== "is_quota") {
+    if (key === "MAL_Brands" && item[key]) {
+      const malBrands = item[key]
+        .split(",")
+        .map((brand) => brand.trim())
+        .filter((brand) => brand !== ""); // Remove empty strings from split
+
+      if (malBrands.length > 0) {
+        detailsHtml += `<p><strong>Brands Dispensed:</strong> `;
+        malBrands.forEach((brand, index) => {
+          detailsHtml += `<a class="mal-brand-link" href="https://quest3plus.bpfk.gov.my/pmo2/detail.php?type=product&id=${brand}" target="_blank" rel="noopener noreferrer">${brand}</a>`;
+          if (index < malBrands.length - 1) {
+            detailsHtml += ", ";
+          }
+        });
+        detailsHtml += `</p>`;
+      }
+    } else if (Object.hasOwn(item, key) && key !== "is_quota" && key !== "MAL_Brands") { // Exclude MAL_Brands from generic display
       detailsHtml += `<p><strong>${key}:</strong> ${item[key]}</p>`;
     }
   });
@@ -380,16 +396,16 @@ document.addEventListener("DOMContentLoaded", () => {
   const openDisclaimer = document.getElementById("open-disclaimer");
   const closeButton = document.getElementsByClassName("close-button")[0];
 
-  openDisclaimer.onclick = function(e) {
+  openDisclaimer.onclick = function (e) {
     e.preventDefault();
     disclaimerModal.style.display = "block";
   }
 
-  closeButton.onclick = function() {
+  closeButton.onclick = function () {
     disclaimerModal.style.display = "none";
   }
 
-  window.onclick = function(event) {
+  window.onclick = function (event) {
     if (event.target == disclaimerModal) {
       disclaimerModal.style.display = "none";
     }
