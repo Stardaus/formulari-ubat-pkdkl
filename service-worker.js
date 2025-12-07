@@ -1,17 +1,19 @@
-const CACHE_NAME = "formulary-cache-v4"; // Increment cache version
+const CACHE_NAME = "formulary-cache-v5"; // Increment cache version
 const urlsToCache = [
-  "/",
-  "/index.html",
-  "/assets/css/style.css",
-  "/assets/js/app.js",
-  "/assets/js/fetchSheet.js",
+  "./",
+  "./index.html",
+  "./assets/css/style.css",
+  "./assets/js/app.js",
+  "./assets/js/fetchSheet.js",
+  "./assets/js/analytics.js",
   "https://cdn.jsdelivr.net/npm/fuse.js/dist/fuse.min.js",
-  "https://unpkg.com/papaparse@5.3.0/papaparse.min.js",
+  "https://unpkg.com/papaparse@5.5.3/papaparse.min.js",
   "https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap",
-  "https://fonts.gstatic.com/s/roboto/v27/KFOmCnqEu92Fr1Mu4mxK.woff2", // Example font file
+  "https://fonts.gstatic.com/s/roboto/v27/KFOmCnqEu92Fr1Mu4mxK.woff2",
 ];
 
 self.addEventListener("install", (event) => {
+  self.skipWaiting(); // Force activation immediately
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
       console.log("Opened cache");
@@ -31,7 +33,7 @@ self.addEventListener("activate", (event) => {
           }
         }),
       );
-    }),
+    }).then(() => self.clients.claim()) // Take control of clients immediately
   );
 });
 
@@ -42,28 +44,40 @@ self.addEventListener("message", (event) => {
 });
 
 self.addEventListener("fetch", (event) => {
-  // Stale-while-revalidate for the Google Sheet
-  if (event.request.url.startsWith("https://docs.google.com/spreadsheets/d/")) {
+  // 1. Handle Google Sheet Requests (Stale-While-Revalidate)
+  if (event.request.url.includes("docs.google.com/spreadsheets")) {
     event.respondWith(
-      caches.open(CACHE_NAME).then((cache) => {
-        return fetch(event.request).then((fetchedResponse) => {
-          cache.put(event.request, fetchedResponse.clone());
-          // Notify clients that new data is available
-          self.clients.matchAll().then(clients => {
-            clients.forEach(client => client.postMessage({type: 'NEW_DATA_AVAILABLE'}));
+      caches.open(CACHE_NAME).then(async (cache) => {
+        // Try to get from cache INSTANTLY
+        const cachedResponse = await cache.match(event.request);
+
+        // Start the network fetch in the background to update the cache
+        const networkFetch = fetch(event.request)
+          .then((networkResponse) => {
+            if (networkResponse.ok) {
+                cache.put(event.request, networkResponse.clone());
+                // Notify the UI that new data is ready
+                self.clients.matchAll().then(clients => {
+                    clients.forEach(client => client.postMessage({type: 'NEW_DATA_AVAILABLE'}));
+                });
+            }
+            return networkResponse;
+          })
+          .catch(() => {
+            console.log("Network failed, keeping old cache.");
           });
-          return fetchedResponse;
-        }).catch(() => {
-          return cache.match(event.request);
-        });
+
+        // Return the cached response immediately if available, otherwise wait for network
+        return cachedResponse || networkFetch;
       })
     );
-  } else {
-    // Cache-first for all other requests
-    event.respondWith(
-      caches.match(event.request).then((response) => {
-        return response || fetch(event.request);
-      })
-    );
+    return;
   }
+
+  // 2. Cache-first for all other requests (App Shell)
+  event.respondWith(
+    caches.match(event.request).then((response) => {
+      return response || fetch(event.request);
+    })
+  );
 });
