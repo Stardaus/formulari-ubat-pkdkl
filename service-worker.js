@@ -1,4 +1,4 @@
-const CACHE_NAME = "formulary-cache-v3"; // Increment cache version
+const CACHE_NAME = "formulary-cache-v4"; // Increment cache version
 const urlsToCache = [
   "/",
   "/index.html",
