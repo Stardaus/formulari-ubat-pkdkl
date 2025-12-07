@@ -42,13 +42,28 @@ self.addEventListener("message", (event) => {
 });
 
 self.addEventListener("fetch", (event) => {
-  event.respondWith(
-    caches.match(event.request).then((response) => {
-      // Cache hit - return response
-      if (response) {
-        return response;
-      }
-      return fetch(event.request);
-    }),
-  );
+  // Stale-while-revalidate for the Google Sheet
+  if (event.request.url.startsWith("https://docs.google.com/spreadsheets/d/")) {
+    event.respondWith(
+      caches.open(CACHE_NAME).then((cache) => {
+        return fetch(event.request).then((fetchedResponse) => {
+          cache.put(event.request, fetchedResponse.clone());
+          // Notify clients that new data is available
+          self.clients.matchAll().then(clients => {
+            clients.forEach(client => client.postMessage({type: 'NEW_DATA_AVAILABLE'}));
+          });
+          return fetchedResponse;
+        }).catch(() => {
+          return cache.match(event.request);
+        });
+      })
+    );
+  } else {
+    // Cache-first for all other requests
+    event.respondWith(
+      caches.match(event.request).then((response) => {
+        return response || fetch(event.request);
+      })
+    );
+  }
 });

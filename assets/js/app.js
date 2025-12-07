@@ -261,6 +261,28 @@ document.addEventListener("DOMContentLoaded", () => {
       });
   }
 
+  // Function to show the data update notification
+  function showDataUpdateNotification() {
+    const notification = document.createElement("div");
+    notification.className = "update-notification";
+    notification.innerHTML = `
+      <span>New data is available.</span>
+      <button id="refresh-data-button">Refresh</button>
+    `;
+    document.body.appendChild(notification);
+
+    document.getElementById("refresh-data-button").addEventListener("click", () => {
+      window.location.reload();
+    });
+  }
+
+  // Listen for messages from the service worker
+  navigator.serviceWorker.addEventListener("message", (event) => {
+    if (event.data && event.data.type === "NEW_DATA_AVAILABLE") {
+      showDataUpdateNotification();
+    }
+  });
+
   // Dark Mode Toggle
   const darkModeToggle = document.getElementById("darkModeToggle");
   const body = document.body;
