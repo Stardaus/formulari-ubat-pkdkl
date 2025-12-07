@@ -72,7 +72,7 @@ export function showDrugDetails(genericName, container, isQuota) {
   }
   let detailsHtml = `<button id="backButton">Back to results</button><h3>${item["Generic Name"]}</h3>`;
   Object.keys(item).forEach((key) => {
-    if (Object.hasOwn(item, key)) {
+    if (Object.hasOwn(item, key) && key !== "is_quota") {
       detailsHtml += `<p><strong>${key}:</strong> ${item[key]}</p>`;
     }
   });
