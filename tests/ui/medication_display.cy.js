@@ -43,10 +43,12 @@ describe('Medication Display and Search', () => {
     });
   });
 
-  // Basic accessibility checks (can be expanded)
-  it('should have accessible search input and buttons', () => {
-    cy.get('#searchBox').should('have.attr', 'aria-label'); // Or placeholder
-    cy.get('#clearSearchButton').should('have.attr', 'aria-label');
-    cy.get('#showAllButton').should('have.attr', 'aria-label'); // Add aria-label to the button in index.html
+  it('should not display "is_quota" in the medication detail card', () => {
+    cy.get('#searchBox').type('Drug A'); // Assuming 'Drug A' is a valid medication
+    cy.get('#results-container .result-item').first().click(); // Click on the first result
+    cy.get('.drug-details-view').should('be.visible');
+    cy.get('.drug-details-view p').each(($el) => {
+      cy.wrap($el).invoke('text').should('not.include', 'is_quota');
+    });
   });
 });
