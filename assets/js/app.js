@@ -88,7 +88,7 @@ export function showDrugDetails(genericName, container, isQuota) {
       if (malBrands.length > 0) {
         detailsHtml += `<p><strong>${key}:</strong> `;
         malBrands.forEach((brand, index) => {
-          detailsHtml += `<a href="https://quest3plus.bpfk.gov.my/pmo2/detail.php?type=product&id=${brand}" target="_blank" rel="noopener noreferrer">${brand}</a>`;
+          detailsHtml += `<a class="mal-brand-link" href="https://quest3plus.bpfk.gov.my/pmo2/detail.php?type=product&id=${brand}" target="_blank" rel="noopener noreferrer">${brand}</a>`;
           if (index < malBrands.length - 1) {
             detailsHtml += ", ";
           }
