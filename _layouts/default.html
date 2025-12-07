@@ -32,6 +32,17 @@
       content="black-translucent"
     />
     <meta name="apple-mobile-web-app-title" content="Formulari PKD KL" />
+
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-4W2Z7N2CFX"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-4W2Z7N2CFX');
+    </script>
+    <!-- End Google Analytics -->
   </head>
   <body>
     <header>
@@ -62,6 +73,7 @@
     </div>
     <script src="https://cdn.jsdelivr.net/npm/fuse.js/dist/fuse.min.js"></script>
     <script src="https://unpkg.com/papaparse@5.3.0/papaparse.min.js"></script>
+    <script type="module" src="{{ '/assets/js/analytics.js' | relative_url }}"></script>
     <script type="module" src="{{ '/assets/js/app.js' | relative_url }}"></script>
   </body>
 </html>

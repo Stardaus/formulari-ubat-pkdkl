@@ -1,4 +1,11 @@
 import { fetchAndParseSheet } from "./fetchSheet.js"; // Import the new function
+import {
+  trackPageView,
+  trackSearch,
+  trackSelectItem,
+  trackButtonClick,
+} from "./analytics.js";
+
 
 export let recentMedications =
   JSON.parse(localStorage.getItem("recentMedications")) || [];
@@ -91,6 +98,8 @@ export function showDrugDetails(genericName, container, isQuota) {
   });
 
   addRecentMedication(item); // Add the full item to recent medications
+  trackPageView(`/drug/${genericName}`);
+  trackSelectItem(item);
 }
 
 export function addRecentMedication(item) {
@@ -126,6 +135,7 @@ export function renderRecentMedications() {
     clearButton.id = "clearRecentButton";
     clearButton.setAttribute("aria-label", "Clear recently viewed");
     clearButton.addEventListener("click", () => {
+      trackButtonClick("clear_recent");
       recentMedications = [];
       localStorage.removeItem("recentMedications");
       renderRecentMedications();
@@ -187,6 +197,7 @@ export function initSearch(data, resultsContainer) {
     resultsContainer.classList.remove("hidden");
     lastResults = fuse.search(searchTerm);
     renderResults(lastResults, resultsContainer);
+    trackSearch(searchTerm);
     clearSearchButton.style.display = "block";
   }, 300);
 
@@ -195,6 +206,7 @@ export function initSearch(data, resultsContainer) {
   });
 
   clearSearchButton.addEventListener("click", () => {
+    trackButtonClick("clear_search");
     searchInput.value = "";
     resultsContainer.innerHTML = "";
     resultsContainer.classList.add("hidden");
@@ -295,10 +307,12 @@ document.addEventListener("DOMContentLoaded", () => {
       is_quota: item.is_quota, // Keep is_quota for lightweight search
     }));
     initSearch(searchData, resultsContainer);
+    trackPageView("/");
 
     // Show All Button functionality
     const showAllButton = document.getElementById("showAllButton");
     showAllButton.addEventListener("click", () => {
+      trackButtonClick("show_all");
       const searchInput = document.getElementById("searchBox");
       searchInput.value = ""; // Clear search input
 
@@ -319,6 +333,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Show Quota Button functionality
     const showQuotaButton = document.getElementById("showQuotaButton");
     showQuotaButton.addEventListener("click", () => {
+      trackButtonClick("show_quota");
       const searchInput = document.getElementById("searchBox");
       searchInput.value = ""; // Clear search input
 
