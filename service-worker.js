@@ -1,4 +1,4 @@
-const CACHE_NAME = "formulary-cache-v5"; // Increment cache version
+const CACHE_NAME = "formulary-cache-v6"; // Increment cache version
 const urlsToCache = [
   "./",
   "./index.html",
@@ -55,11 +55,21 @@ self.addEventListener("fetch", (event) => {
         const networkFetch = fetch(event.request)
           .then((networkResponse) => {
             if (networkResponse.ok) {
-                cache.put(event.request, networkResponse.clone());
-                // Notify the UI that new data is ready
-                self.clients.matchAll().then(clients => {
-                    clients.forEach(client => client.postMessage({type: 'NEW_DATA_AVAILABLE'}));
+              // Compare content before notifying
+              if (cachedResponse) {
+                cachedResponse.text().then(cachedText => {
+                  networkResponse.clone().text().then(newText => {
+                    if (cachedText !== newText) {
+                      cache.put(event.request, networkResponse.clone());
+                      self.clients.matchAll().then(clients => {
+                        clients.forEach(client => client.postMessage({type: 'NEW_DATA_AVAILABLE'}));
+                      });
+                    }
+                  });
                 });
+              } else {
+                cache.put(event.request, networkResponse.clone());
+              }
             }
             return networkResponse;
           })
