@@ -1,4 +1,4 @@
-const CACHE_NAME = "formulary-cache-v8"; // Incremented version to force update
+const CACHE_NAME = "formulary-cache-v9"; // Incremented version to force update
 const urlsToCache = [
   "./",
   "./index.html",
@@ -61,7 +61,11 @@ self.addEventListener("fetch", (event) => {
         }
 
         // Fetch from network in the background
-        const networkFetch = fetch(event.request)
+        // Append timestamp to prevent browser caching of the Google Sheet
+        const cacheBustUrl = new URL(event.request.url);
+        cacheBustUrl.searchParams.append("_t", Date.now());
+
+        const networkFetch = fetch(cacheBustUrl)
           .then((networkResponse) => {
             if (networkResponse.ok) {
               const responseCloneForCache = networkResponse.clone();
