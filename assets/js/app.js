@@ -325,7 +325,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const { googleSheetCsvUrl } = {
     googleSheetCsvUrl:
-      "https://docs.google.com/spreadsheets/d/1YZOSxZXQriBlMBgSZaeizQ3zkunaspARZ-0ZgaZpHMk/export?format=csv&gid=1786132140",
+      "https://docs.google.com/spreadsheets/d/e/2PACX-1vTFA9lhUhdSk7L_t0XnGtGzrIMw1g9EXrNjmRfaBaQ8naqAy7ua8r_lpeth-LPQQS2pOMlKKSbvYQuB/pub?output=csv",
   };
 
   fetchAndParseSheet(googleSheetCsvUrl).then((allData) => {
