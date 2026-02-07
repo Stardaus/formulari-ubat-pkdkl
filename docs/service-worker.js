@@ -10,7 +10,7 @@
  *    - Notifies the frontend when a new version is ready.
  */
 
-const CACHE_NAME = "formulary-cache-v12";
+const CACHE_NAME = "formulary-cache-v13";
 const VERSION_SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTFA9lhUhdSk7L_t0XnGtGzrIMw1g9EXrNjmRfaBaQ8naqAy7ua8r_lpeth-LPQQS2pOMlKKSbvYQuB/pub?gid=411569782&single=true&output=csv";
 
 const urlsToCache = [
