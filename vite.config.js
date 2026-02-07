@@ -5,6 +5,10 @@ import react from '@vitejs/plugin-react';
 export default defineConfig({
   plugins: [react()],
   base: '/formulari-ubat-pkdkl/',
+  build: {
+    outDir: 'docs',
+    emptyOutDir: true,
+  },
   test: {
     globals: true,
     environment: 'jsdom',
