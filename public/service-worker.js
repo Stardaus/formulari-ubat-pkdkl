@@ -14,10 +14,10 @@ const CACHE_NAME = "formulary-cache-v12";
 const VERSION_SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTFA9lhUhdSk7L_t0XnGtGzrIMw1g9EXrNjmRfaBaQ8naqAy7ua8r_lpeth-LPQQS2pOMlKKSbvYQuB/pub?gid=411569782&single=true&output=csv";
 
 const urlsToCache = [
-  "/",
-  "/index.html",
-  "/manifest.json",
-  "/favicon.ico",
+  "./",
+  "index.html",
+  "manifest.json",
+  "favicon.ico",
 ];
 
 // --- Install Phase ---
