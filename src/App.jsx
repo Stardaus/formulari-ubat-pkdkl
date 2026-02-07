@@ -9,8 +9,22 @@ import Footer from './components/Footer';
 import DisclaimerModal from './components/DisclaimerModal';
 import { trackPageView } from './utils/analytics';
 
+/**
+ * Main App component.
+ * 
+ * Orchestrates the entire application state including:
+ * - Data fetching (via custom hook)
+ * - Search results and filtering
+ * - Navigation between list and details views
+ * - Recent medications history (persisted in localStorage)
+ * - UI notifications (Service Worker updates)
+ * - Analytics tracking
+ */
 function App() {
+  // --- Data State ---
   const { data, loading, error } = useMedicationData();
+  
+  // --- UI State ---
   const [searchResults, setSearchResults] = useState([]);
   const [selectedMedication, setSelectedMedication] = useState(null);
   const [recentMedications, setRecentMedications] = useState(
@@ -21,10 +35,20 @@ function App() {
   const [view, setView] = useState('list'); // 'list' or 'details'
   const [showUpdateNotification, setShowUpdateNotification] = useState(false);
 
+  // --- Effects ---
+
+  /**
+   * Effect to track page views via Google Analytics.
+   * Tracks virtual page views when switching between List and Details views.
+   */
   useEffect(() => {
     trackPageView(view === 'details' ? `/drug/${selectedMedication?.['Generic Name']}` : '/');
   }, [view, selectedMedication]);
 
+  /**
+   * Effect to listen for Service Worker updates.
+   * Sets the notification state when a 'NEW_DATA_AVAILABLE' message is received.
+   */
   useEffect(() => {
     const handleMessage = (event) => {
       console.log("App received message:", event.data);
@@ -44,16 +68,27 @@ function App() {
     };
   }, []);
 
+  // --- Handlers ---
+
+  /**
+   * Refreshes the page to load the new service worker and data.
+   */
   const handleRefresh = () => {
     localStorage.setItem('lastManualRefresh', Date.now());
     window.location.reload();
   };
 
+  /**
+   * Selects a medication to view its details.
+   * Updates the 'Recent Medications' list in local storage.
+   * 
+   * @param {Object} med - The medication object selected.
+   */
   const handleSelectMedication = (med) => {
     setSelectedMedication(med);
     setView('details');
     
-    // Update recent medications
+    // Update recent medications list (Limit to top 5)
     const updatedRecent = [
       med,
       ...recentMedications.filter(m => m['Generic Name'] !== med['Generic Name'])
@@ -62,11 +97,17 @@ function App() {
     localStorage.setItem('recentMedications', JSON.stringify(updatedRecent));
   };
 
+  /**
+   * Navigates back to the medication list view.
+   */
   const handleBack = () => {
     setView('list');
     setSelectedMedication(null);
   };
 
+  /**
+   * Clears the recently viewed medications history.
+   */
   const handleClearRecent = () => {
     setRecentMedications([]);
     localStorage.removeItem('recentMedications');
@@ -92,6 +133,7 @@ function App() {
               onSelect={handleSelectMedication}
               onClear={handleClearRecent}
             />
+            {/* Filter Buttons */}
             <div className="button-group">
                <button onClick={() => setSearchResults(data.map(item => ({ item })))}>
                  Show All Medications

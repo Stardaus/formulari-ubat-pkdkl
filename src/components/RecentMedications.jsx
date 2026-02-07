@@ -1,6 +1,17 @@
 import React from 'react';
 import { trackButtonClick } from '../utils/analytics';
 
+/**
+ * RecentMedications component displays a list of recently viewed medications.
+ * 
+ * Renders a horizontal list of clickable chips.
+ * Allows the user to clear the history.
+ *
+ * @param {Object} props
+ * @param {Array<Object>} props.medications - Array of recently viewed medication objects.
+ * @param {Function} props.onSelect - Callback function when a recent item is clicked.
+ * @param {Function} props.onClear - Callback function to clear the recent history.
+ */
 function RecentMedications({ medications, onSelect, onClear }) {
   if (medications.length === 0) return null;
 

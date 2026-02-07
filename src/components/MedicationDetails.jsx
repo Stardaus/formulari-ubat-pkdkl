@@ -1,6 +1,16 @@
 import React from 'react';
 import { trackSelectItem } from '../utils/analytics';
 
+/**
+ * MedicationDetails component renders the full details of a selected medication.
+ * 
+ * Displays all available properties of the medication object.
+ * Handles specific formatting for 'MAL_Brands' by creating external links.
+ * 
+ * @param {Object} props
+ * @param {Object} props.medication - The medication object to display.
+ * @param {Function} props.onBack - Callback function to return to the list view.
+ */
 function MedicationDetails({ medication, onBack }) {
   if (!medication) return null;
 
@@ -14,7 +24,10 @@ function MedicationDetails({ medication, onBack }) {
       <h3>{medication["Generic Name"]}</h3>
       
       {Object.entries(medication).map(([key, value]) => {
+        // Skip internal flags or empty keys
         if (key === "is_quota") return null;
+        
+        // Special handling for MAL Brands to create clickable links
         if (key === "MAL_Brands") {
           if (malBrands.length === 0) return null;
           return (
@@ -36,6 +49,8 @@ function MedicationDetails({ medication, onBack }) {
             </p>
           );
         }
+        
+        // Render standard key-value pairs
         return (
           <p key={key}>
             <strong>{key}:</strong> {value}

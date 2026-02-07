@@ -1,5 +1,13 @@
 import React from 'react';
 
+/**
+ * DisclaimerModal component displays important legal and medical disclaimers.
+ * 
+ * Renders as a modal overlay with a close button.
+ *
+ * @param {Object} props
+ * @param {Function} props.onClose - Callback function to close the modal.
+ */
 function DisclaimerModal({ onClose }) {
   return (
     <div id="disclaimer-modal" className="modal" style={{ display: 'block' }}>

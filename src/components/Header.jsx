@@ -1,11 +1,18 @@
 import React, { useState, useEffect } from 'react';
 
+/**
+ * Header component that displays the application title and a dark mode toggle.
+ * 
+ * Manages the dark mode state using local storage to persist user preference.
+ * Toggles the 'dark-mode' class on the document body.
+ */
 function Header() {
   const [isDarkMode, setIsDarkMode] = useState(
     localStorage.getItem('theme') === 'dark-mode'
   );
 
   useEffect(() => {
+    // Apply or remove the dark-mode class based on state
     if (isDarkMode) {
       document.body.classList.add('dark-mode');
       localStorage.setItem('theme', 'dark-mode');
