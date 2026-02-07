@@ -16,9 +16,30 @@ if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/service-worker.js').then(registration => {
       console.log('SW registered: ', registration);
+
+      // Check for updates periodically
+      registration.onupdatefound = () => {
+        const installingWorker = registration.installing;
+        if (installingWorker) {
+          installingWorker.onstatechange = () => {
+            if (installingWorker.state === 'installed') {
+              if (navigator.serviceWorker.controller) {
+                // New content is available; please refresh.
+                console.log('New app version available. Notifying user...');
+                window.dispatchEvent(new CustomEvent('NEW_APP_VERSION'));
+              }
+            }
+          };
+        }
+      };
     }).catch(registrationError => {
       console.log('SW registration failed: ', registrationError);
     });
+  });
+
+  // Listen for the controllerchange event (triggered by skipWaiting)
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    console.log('Service Worker controller changed. Reloading might be needed.');
   });
 }
 

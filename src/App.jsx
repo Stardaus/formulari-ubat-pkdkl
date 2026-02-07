@@ -57,14 +57,21 @@ function App() {
       }
     };
 
+    const handleAppUpdate = () => {
+      console.log("New app version detected via event.");
+      setShowUpdateNotification(true);
+    };
+
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.addEventListener('message', handleMessage);
     }
+    window.addEventListener('NEW_APP_VERSION', handleAppUpdate);
 
     return () => {
       if ('serviceWorker' in navigator) {
         navigator.serviceWorker.removeEventListener('message', handleMessage);
       }
+      window.removeEventListener('NEW_APP_VERSION', handleAppUpdate);
     };
   }, []);
 
