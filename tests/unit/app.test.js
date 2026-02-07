@@ -1,4 +1,5 @@
-import { fetchAndParseSheet } from "../../assets/js/fetchSheet.js"; // Import the new function
+import { describe, test, expect, beforeAll, afterAll, beforeEach, afterEach, vi } from "vitest";
+import { fetchAndParseSheet } from "../../src/utils/fetchSheet.js"; // Import from new location
 
 const mockCsvData = `
 "Generic Name","Brand","FUKKM System/Group","MDC","NEML","Method of Purchase","Category","Indications","Prescribing Restrictions","Dosage","Adverse Reaction","Contraindications","Interactions","Precautions","is_quota"
@@ -13,12 +14,12 @@ describe("Data Fetching and Parsing with fetchAndParseSheet (PapaParse)", () => 
 
   beforeAll(() => {
     // Mock console.error to prevent Jest from failing on expected errors
-    consoleErrorSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+    consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
 
     // Mock Papa.parse
     originalPapa = global.Papa;
     global.Papa = {
-      parse: jest.fn((csvString, config) => {
+      parse: vi.fn((csvString, config) => {
         let parsedData = [];
         let errors = [];
 
@@ -72,7 +73,7 @@ describe("Data Fetching and Parsing with fetchAndParseSheet (PapaParse)", () => 
   beforeEach(() => {
     // Mock fetch to return a sample CSV string that PapaParse can handle
     originalFetch = global.fetch;
-    global.fetch = jest.fn(() =>
+    global.fetch = vi.fn(() =>
       Promise.resolve({
         ok: true,
         status: 200,
