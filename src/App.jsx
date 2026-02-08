@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useMedicationData } from './hooks/useMedicationData';
 import Header from './components/Header';
 import SearchBar from './components/SearchBar';
@@ -32,8 +32,20 @@ function App() {
   );
   const [isDisclaimerOpen, setIsDisclaimerOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [activeFilter, setActiveFilter] = useState(null); // 'all', 'quota', or null
   const [view, setView] = useState('list'); // 'list' or 'details'
   const [showUpdateNotification, setShowUpdateNotification] = useState(false);
+
+  // --- Derived State ---
+  const displayResults = useMemo(() => {
+    if (activeFilter === 'all') {
+      return data.map(item => ({ item }));
+    }
+    if (activeFilter === 'quota') {
+      return data.filter(item => item.is_quota).map(item => ({ item }));
+    }
+    return searchResults;
+  }, [activeFilter, data, searchResults]);
 
   // --- Effects ---
 
@@ -133,7 +145,10 @@ function App() {
               data={data} 
               setSearchResults={setSearchResults} 
               searchTerm={searchTerm}
-              setSearchTerm={setSearchTerm}
+              setSearchTerm={(term) => {
+                setSearchTerm(term);
+                if (term.trim() !== '') setActiveFilter(null);
+              }}
             />
             <RecentMedications 
               medications={recentMedications} 
@@ -142,16 +157,39 @@ function App() {
             />
             {/* Filter Buttons */}
             <div className="button-group">
-               <button onClick={() => setSearchResults(data.map(item => ({ item })))}>
-                 Show All Medications
+               <button 
+                 id="showAllButton"
+                 className={activeFilter === 'all' ? 'active' : ''}
+                 onClick={() => {
+                   if (activeFilter === 'all') {
+                     setActiveFilter(null);
+                   } else {
+                     setActiveFilter('all');
+                     setSearchTerm('');
+                   }
+                 }}
+               >
+                 {activeFilter === 'all' ? 'Hide All Medications' : 'Show All Medications'}
                </button>
-               <button onClick={() => setSearchResults(data.filter(item => item.is_quota).map(item => ({ item })))}>
-                 Show Quota Medications
+               <button 
+                 id="showQuotaButton"
+                 className={activeFilter === 'quota' ? 'active' : ''}
+                 onClick={() => {
+                   if (activeFilter === 'quota') {
+                     setActiveFilter(null);
+                   } else {
+                     setActiveFilter('quota');
+                     setSearchTerm('');
+                   }
+                 }}
+               >
+                 {activeFilter === 'quota' ? 'Hide Quota Medications' : 'Show Quota Medications'}
                </button>
             </div>
             <MedicationList 
-              results={searchResults} 
+              results={displayResults} 
               onSelect={handleSelectMedication} 
+              searchTerm={searchTerm}
             />
           </>
         ) : (

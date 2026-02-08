@@ -9,9 +9,19 @@ import React from 'react';
  * @param {Object} props
  * @param {Array<Object>} props.results - Array of Fuse.js result objects (containing an 'item' property).
  * @param {Function} props.onSelect - Callback function triggered when a medication is clicked.
+ * @param {string} props.searchTerm - Current search term.
  */
-function MedicationList({ results, onSelect }) {
-  if (results.length === 0) return null;
+function MedicationList({ results, onSelect, searchTerm }) {
+  if (results.length === 0) {
+    if (searchTerm && searchTerm.trim() !== "") {
+      return (
+        <div id="results-container">
+          <p>No results found.</p>
+        </div>
+      );
+    }
+    return null;
+  }
 
   return (
     <div id="results-container">
