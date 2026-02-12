@@ -90,7 +90,7 @@ The app relies on **two** specific Google Sheets published to the web as CSV.
 ## 4. Key Implementation Details
 
 ### Service Worker (`public/service-worker.js`)
-*   **Version:** Controlled by `CACHE_NAME` (e.g., `formulary-cache-v17`).
+*   **Version:** Controlled by `CACHE_NAME` (e.g., `formulary-cache-v18`).
 *   **Logic:**
     *   Intercepts requests to `docs.google.com`.
     *   Fetches the Version Sheet CSV.

@@ -16,14 +16,6 @@
   html.dark, html.dark body {
     background-color: #030712; /* gray-950 */
   }
-
-  header {
-    padding-top: env(safe-area-inset-top, 0px);
-  }
-
-  main {
-    padding-bottom: env(safe-area-inset-bottom, 0px);
-  }
 }
 
 /* Ensure the app fills the viewport including safe areas */
