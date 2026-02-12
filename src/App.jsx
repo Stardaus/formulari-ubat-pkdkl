@@ -84,6 +84,16 @@ export default function App() {
       root.classList.remove('dark');
     }
     localStorage.setItem('app-theme', theme);
+
+    // Update theme-color meta tag dynamically
+    const themeColor = theme === 'dark' ? '#030712' : '#f5f5f4';
+    let meta = document.querySelector('meta[name="theme-color"]:not([media])');
+    if (!meta) {
+      meta = document.createElement('meta');
+      meta.name = 'theme-color';
+      document.getElementsByTagName('head')[0].appendChild(meta);
+    }
+    meta.content = themeColor;
   }, [theme]);
 
   // --- Handlers ---
