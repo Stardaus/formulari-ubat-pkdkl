@@ -7,7 +7,7 @@
  * 3. Smart Background Updates: Implements a "Two-Step" update strategy using a separate Version Sheet.
  */
 
-const CACHE_NAME = "formulary-cache-v14";
+const CACHE_NAME = "formulary-cache-v15";
 const VERSION_SHEET_URL =
   "https://docs.google.com/spreadsheets/d/e/2PACX-1vTFA9lhUhdSk7L_t0XnGtGzrIMw1g9EXrNjmRfaBaQ8naqAy7ua8r_lpeth-LPQQS2pOMlKKSbvYQuB/pub?gid=411569782&single=true&output=csv";
 
@@ -75,14 +75,14 @@ self.addEventListener("fetch", (event) => {
 
             if (!match) return;
 
-            const newVersion = parseInt(match[1]);
+            const newVersion = parseInt(match[1], 10);
             const cachedVersionResponse = await cache.match(VERSION_SHEET_URL);
             let oldVersion = 0;
 
             if (cachedVersionResponse) {
               const cachedVersionText = await cachedVersionResponse.text();
               const cachedMatch = cachedVersionText.match(versionRegex);
-              if (cachedMatch) oldVersion = parseInt(cachedMatch[1]);
+              if (cachedMatch) oldVersion = parseInt(cachedMatch[1], 10);
             }
 
             if (newVersion > oldVersion) {
