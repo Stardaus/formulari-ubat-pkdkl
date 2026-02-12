@@ -1,3 +1,25 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  html, body {
+    @apply transition-colors duration-300;
+  }
+  
+  /* Light mode (default) */
+  html, body {
+    background-color: #f5f5f4; /* stone-100 */
+  }
+
+  /* Dark mode */
+  html.dark, html.dark body {
+    background-color: #030712; /* gray-950 */
+  }
+}
+
+/* Ensure the app fills the viewport including safe areas */
+#root {
+  min-height: 100vh;
+  min-height: 100svh;
+}

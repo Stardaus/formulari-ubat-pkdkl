@@ -7,7 +7,7 @@
  * 3. Smart Background Updates: Implements a "Two-Step" update strategy using a separate Version Sheet.
  */
 
-const CACHE_NAME = "formulary-cache-v15";
+const CACHE_NAME = "formulary-cache-v16";
 const VERSION_SHEET_URL =
   "https://docs.google.com/spreadsheets/d/e/2PACX-1vTFA9lhUhdSk7L_t0XnGtGzrIMw1g9EXrNjmRfaBaQ8naqAy7ua8r_lpeth-LPQQS2pOMlKKSbvYQuB/pub?gid=411569782&single=true&output=csv";
 
