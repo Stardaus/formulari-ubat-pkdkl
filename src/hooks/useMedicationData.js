@@ -1,15 +1,16 @@
-import { useState, useEffect } from 'react';
-import { fetchAndParseSheet } from '../utils/fetchSheet';
+import { useState, useEffect } from "react";
+import { fetchAndParseSheet } from "../utils/fetchSheet";
 
 /**
  * URL for the main Google Sheet containing medication data.
  * This should be the 'published to web' CSV link.
  */
-const GOOGLE_SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTFA9lhUhdSk7L_t0XnGtGzrIMw1g9EXrNjmRfaBaQ8naqAy7ua8r_lpeth-LPQQS2pOMlKKSbvYQuB/pub?gid=1786132140&single=true&output=csv";
+const GOOGLE_SHEET_CSV_URL =
+  "https://docs.google.com/spreadsheets/d/e/2PACX-1vTFA9lhUhdSk7L_t0XnGtGzrIMw1g9EXrNjmRfaBaQ8naqAy7ua8r_lpeth-LPQQS2pOMlKKSbvYQuB/pub?gid=1786132140&single=true&output=csv";
 
 /**
  * Custom React Hook to fetch and manage the medication data state.
- * 
+ *
  * @returns {Object} An object containing:
  *   - data {Array<Object>}: The array of parsed medication objects.
  *   - loading {boolean}: True while data is being fetched, false otherwise.
@@ -35,4 +36,3 @@ export function useMedicationData() {
 
   return { data, loading, error };
 }
-

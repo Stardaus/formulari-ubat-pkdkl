@@ -44,7 +44,7 @@ export function fetchAndParseSheet(sheetUrl) {
                 // Remove rows where 'Generic Name' is missing/empty.
                 // Remove the special 'data_version' metadata row used by the Service Worker.
                 .filter((row) => {
-                  const genericName = row["Generic Name"]?.trim();
+                  const genericName = row["Generic Name"] ? row["Generic Name"].trim() : null;
                   return genericName && genericName !== "data_version";
                 })
                 // 2. Transformation Logic:
@@ -65,7 +65,7 @@ export function fetchAndParseSheet(sheetUrl) {
                   contraindications: row["Contraindications"],
                   interactions: row["Interactions"],
                   precautions: row["Precautions"],
-                  isQuota: row["is_quota"]?.trim().toUpperCase() === "TRUE"
+                  isQuota: (row["is_quota"] && row["is_quota"].trim().toUpperCase() === "TRUE") || false
                 }))
                 // 3. Sorting Logic:
                 // Sort the array alphabetically by 'name' for display.

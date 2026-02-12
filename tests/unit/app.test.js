@@ -1,4 +1,13 @@
-import { describe, test, expect, beforeAll, afterAll, beforeEach, afterEach, vi } from "vitest";
+import {
+  describe,
+  test,
+  expect,
+  beforeAll,
+  afterAll,
+  beforeEach,
+  afterEach,
+  vi,
+} from "vitest";
 import { fetchAndParseSheet } from "../../src/utils/fetchSheet.js";
 
 const mockCsvData = `
@@ -21,42 +30,46 @@ describe("Data Fetching and Parsing with fetchAndParseSheet (PapaParse)", () => 
         let parsedData = [];
         let errors = [];
 
-        if (csvString.includes(`"Generic Name","MAL_Brands","FUKKM System/Group","MDC","NEML","Method of Purchase","Category","Indications","Prescribing Restrictions","Dosage","Adverse Reaction","Contraindications","Interactions","Precautions","is_quota"`)) {
+        if (
+          csvString.includes(
+            `"Generic Name","MAL_Brands","FUKKM System/Group","MDC","NEML","Method of Purchase","Category","Indications","Prescribing Restrictions","Dosage","Adverse Reaction","Contraindications","Interactions","Precautions","is_quota"`,
+          )
+        ) {
           parsedData = [
             {
               "Generic Name": "Drug A",
-              "MAL_Brands": "Brand A",
+              MAL_Brands: "Brand A",
               "FUKKM System/Group": "Group 1",
-              "MDC": "MDC1",
-              "NEML": "Yes",
+              MDC: "MDC1",
+              NEML: "Yes",
               "Method of Purchase": "LP",
-              "Category": "A/KK",
-              "Indications": "Indications A",
+              Category: "A/KK",
+              Indications: "Indications A",
               "Prescribing Restrictions": "None",
-              "Dosage": "Dosage A",
+              Dosage: "Dosage A",
               "Adverse Reaction": "AR A",
-              "Contraindications": "CI A",
-              "Interactions": "Int A",
-              "Precautions": "Prec A",
-              "is_quota": "TRUE",
+              Contraindications: "CI A",
+              Interactions: "Int A",
+              Precautions: "Prec A",
+              is_quota: "TRUE",
             },
             {
               "Generic Name": "Drug B",
-              "MAL_Brands": "Brand B",
+              MAL_Brands: "Brand B",
               "FUKKM System/Group": "Group 2",
-              "MDC": "MDC2",
-              "NEML": "No",
+              MDC: "MDC2",
+              NEML: "No",
               "Method of Purchase": "APPL",
-              "Category": "B",
-              "Indications": "Indications B",
+              Category: "B",
+              Indications: "Indications B",
               "Prescribing Restrictions": "None",
-              "Dosage": "Dosage B",
+              Dosage: "Dosage B",
               "Adverse Reaction": "AR B",
-              "Contraindications": "CI B",
-              "Interactions": "Int B",
-              "Precautions": "Prec B",
-              "is_quota": "FALSE",
-            }
+              Contraindications: "CI B",
+              Interactions: "Int B",
+              Precautions: "Prec B",
+              is_quota: "FALSE",
+            },
           ];
         } else if (csvString.includes(`"malformed,csv"`)) {
           parsedData = [];
@@ -64,9 +77,9 @@ describe("Data Fetching and Parsing with fetchAndParseSheet (PapaParse)", () => 
         }
 
         if (config.complete) {
-          config.complete({ data: parsedData, errors: errors });
+          config.complete({ data: parsedData, errors });
         }
-        return { data: parsedData, errors: errors };
+        return { data: parsedData, errors };
       }),
     };
   });
@@ -119,7 +132,9 @@ describe("Data Fetching and Parsing with fetchAndParseSheet (PapaParse)", () => 
       }),
     );
 
-    await expect(fetchAndParseSheet("http://mock.url/nonexistent.csv")).rejects.toThrow("HTTP error! status: 404");
+    await expect(
+      fetchAndParseSheet("http://mock.url/nonexistent.csv"),
+    ).rejects.toThrow("HTTP error! status: 404");
   });
 
   test("should handle parsing errors (e.g., malformed CSV)", async () => {
@@ -131,6 +146,8 @@ describe("Data Fetching and Parsing with fetchAndParseSheet (PapaParse)", () => 
       }),
     );
 
-    await expect(fetchAndParseSheet("http://mock.url/malformed.csv")).rejects.toThrow("CSV parsing errors encountered.");
+    await expect(
+      fetchAndParseSheet("http://mock.url/malformed.csv"),
+    ).rejects.toThrow("CSV parsing errors encountered.");
   });
 });
