@@ -80,21 +80,28 @@ The app relies on **two** specific Google Sheets published to the web as CSV.
 ### How to Update Data
 1.  **Edit:** Pharmacists edit the main Google Sheet.
 2.  **Auto-Update:** A Google Apps Script (in the sheet) updates the timestamp in the Version Sheet.
-3.  **Detect:** The app detects the new timestamp on the next user visit.
-4.  **Deploy:** No code deployment is needed for data updates.
+3.  **Detect:** The Service Worker detects the new timestamp on the next user visit (or periodic check).
+4.  **Fetch & Notify:** The SW fetches the new data in the background and sends a `NEW_DATA_AVAILABLE` message.
+5.  **Refresh:** A banner appears in the app. The user clicks "Refresh Now" to load the latest data from the cache.
+6.  **Deploy:** No code deployment is needed for data updates.
 
 ---
 
 ## 4. Key Implementation Details
 
 ### Service Worker (`public/service-worker.js`)
-*   **Version:** Controlled by `CACHE_NAME` (e.g., `formulary-cache-v12`).
+*   **Version:** Controlled by `CACHE_NAME` (e.g., `formulary-cache-v14`).
 *   **Logic:**
     *   Intercepts requests to `docs.google.com`.
     *   Fetches the Version Sheet CSV.
     *   Parses the `data_version`.
     *   Compares `NewVersion > CachedVersion`.
     *   If newer, fetches the main sheet and broadcasts `NEW_DATA_AVAILABLE`.
+
+### App Controller (`src/App.jsx`)
+*   **Update Listener:** Uses `useEffect` to listen for messages from the Service Worker.
+*   **Banner:** Displays a sticky notification when `newDataAvailable` is set to `true`.
+*   **Refresh Action:** Provides a "Refresh Now" button that calls `window.location.reload()`.
 
 ### Data Parsing (`src/utils/fetchSheet.js`)
 *   Uses **PapaParse** to convert CSV text to JSON.

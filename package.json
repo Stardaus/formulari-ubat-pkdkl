@@ -19,7 +19,6 @@
     "cy:run": "cypress run"
   },
   "dependencies": {
-    "fuse.js": "^7.1.0",
     "lucide-react": "^0.563.0",
     "papaparse": "^5.5.3",
     "react": "^19.2.4",

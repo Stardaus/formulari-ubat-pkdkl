@@ -87,6 +87,8 @@ To solve the "Sync Jitter" problem common with Google Sheets (where servers retu
 1.  **Step 1:** The app checks a dedicated **Version Sheet** first. This response is extremely small (<100 bytes).
 2.  **Step 2:** It parses a `data_version` Unix timestamp.
 3.  **Step 3:** Only if `NetworkVersion > CachedVersion` does it initiate the download of the heavy main database.
+4.  **Step 4:** Once the new data is cached, the Service Worker sends a `NEW_DATA_AVAILABLE` message to the Client.
+5.  **Step 5:** The React App (`App.jsx`) receives this message and displays a sticky "Refresh Now" banner to the user.
 
 ### 3. Client-Side Search
 *   **Library:** [Fuse.js](https://fusejs.io/)

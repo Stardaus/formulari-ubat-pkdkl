@@ -46,7 +46,35 @@ export default function App() {
     return 'light';
   });
 
+  const [newDataAvailable, setNewDataAvailable] = useState(false);
+
   // --- Effects ---
+  // Listen for Service Worker messages
+  useEffect(() => {
+    if ('serviceWorker' in navigator) {
+      const handleMessage = (event) => {
+        if (event.data && event.data.type === 'NEW_DATA_AVAILABLE') {
+          console.log('New data available message received in App');
+          setNewDataAvailable(true);
+        }
+      };
+
+      navigator.serviceWorker.addEventListener('message', handleMessage);
+      
+      // Also listen for app updates (code changes)
+      const handleAppUpdate = () => {
+        console.log('New app version event received in App');
+        setNewDataAvailable(true);
+      };
+      window.addEventListener('NEW_APP_VERSION', handleAppUpdate);
+
+      return () => {
+        navigator.serviceWorker.removeEventListener('message', handleMessage);
+        window.removeEventListener('NEW_APP_VERSION', handleAppUpdate);
+      };
+    }
+  }, []);
+
   // Apply theme to document
   useEffect(() => {
     const root = document.documentElement;
@@ -158,6 +186,25 @@ export default function App() {
             toggleTheme={toggleTheme} 
             setShowDisclaimer={() => setShowDisclaimer(true)} 
           />
+
+          {newDataAvailable && (
+            <div className="sticky top-16 z-20 w-full bg-indigo-600 text-white py-3 px-4 shadow-lg animate-in slide-in-from-top duration-300">
+              <div className="max-w-3xl mx-auto flex items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="p-1.5 bg-white/20 rounded-lg">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></svg>
+                  </div>
+                  <p className="text-sm font-bold tracking-tight">New formulary data available!</p>
+                </div>
+                <button 
+                  onClick={() => window.location.reload()}
+                  className="px-4 py-1.5 bg-white text-indigo-600 text-xs font-black rounded-lg hover:bg-indigo-50 transition-colors shadow-sm uppercase"
+                >
+                  Refresh Now
+                </button>
+              </div>
+            </div>
+          )}
           
           <main className="flex-grow max-w-3xl w-full mx-auto px-4 sm:px-6 py-8 space-y-8 pb-24">
              <div className="space-y-4">
