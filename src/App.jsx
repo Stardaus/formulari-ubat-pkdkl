@@ -1,221 +1,221 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useMedicationData } from './hooks/useMedicationData';
+
+// Import newly updated components
 import Header from './components/Header';
 import SearchBar from './components/SearchBar';
 import MedicationList from './components/MedicationList';
-import MedicationDetails from './components/MedicationDetails';
 import RecentMedications from './components/RecentMedications';
-import Footer from './components/Footer';
+import MedicationDetails from './components/MedicationDetails';
 import DisclaimerModal from './components/DisclaimerModal';
-import { trackPageView } from './utils/analytics';
 
 /**
  * Main App component.
- * 
- * Orchestrates the entire application state including:
- * - Data fetching (via custom hook)
- * - Search results and filtering
- * - Navigation between list and details views
- * - Recent medications history (persisted in localStorage)
- * - UI notifications (Service Worker updates)
- * - Analytics tracking
  */
-function App() {
-  // --- Data State ---
-  const { data, loading, error } = useMedicationData();
+export default function App() {
+  // --- Data Fetching ---
+  const { data: medications, loading, error } = useMedicationData();
   
-  // --- UI State ---
-  const [searchResults, setSearchResults] = useState([]);
-  const [selectedMedication, setSelectedMedication] = useState(null);
-  const [recentMedications, setRecentMedications] = useState(
-    JSON.parse(localStorage.getItem('recentMedications')) || []
-  );
-  const [isDisclaimerOpen, setIsDisclaimerOpen] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [activeFilter, setActiveFilter] = useState(null); // 'all', 'quota', or null
-  const [view, setView] = useState('list'); // 'list' or 'details'
-  const [showUpdateNotification, setShowUpdateNotification] = useState(false);
-
-  // --- Derived State ---
-  const displayResults = useMemo(() => {
-    if (activeFilter === 'all') {
-      return data.map(item => ({ item }));
+  // --- Application State ---
+  const [searchQuery, setSearchQuery] = useState('');
+  const [activeFilter, setActiveFilter] = useState(null); // 'all' or 'quota'
+  const [selectedMed, setSelectedMed] = useState(null);
+  const [showDisclaimer, setShowDisclaimer] = useState(() => {
+    return localStorage.getItem('disclaimer-agreed') !== 'true';
+  });
+  const [recentMeds, setRecentMeds] = useState(() => {
+    const saved = localStorage.getItem('recent-meds');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        console.error("Failed to parse recents", e);
+        return [];
+      }
     }
-    if (activeFilter === 'quota') {
-      return data.filter(item => item.is_quota).map(item => ({ item }));
+    return [];
+  });
+  
+  // Theme state: Initialize from system preference or local storage
+  const [theme, setTheme] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('app-theme');
+      if (saved) return saved;
+      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
     }
-    return searchResults;
-  }, [activeFilter, data, searchResults]);
+    return 'light';
+  });
 
   // --- Effects ---
-
-  /**
-   * Effect to track page views via Google Analytics.
-   * Tracks virtual page views when switching between List and Details views.
-   */
+  // Apply theme to document
   useEffect(() => {
-    trackPageView(view === 'details' ? `/drug/${selectedMedication?.['Generic Name']}` : '/');
-  }, [view, selectedMedication]);
-
-  /**
-   * Effect to listen for Service Worker updates.
-   * Sets the notification state when a 'NEW_DATA_AVAILABLE' message is received.
-   */
-  useEffect(() => {
-    const handleMessage = (event) => {
-      console.log("App received message:", event.data);
-      if (event.data && event.data.type === 'NEW_DATA_AVAILABLE') {
-        setShowUpdateNotification(true);
-      }
-    };
-
-    const handleAppUpdate = () => {
-      console.log("New app version detected via event.");
-      setShowUpdateNotification(true);
-    };
-
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.addEventListener('message', handleMessage);
+    const root = document.documentElement;
+    if (theme === 'dark') {
+      root.classList.add('dark');
+    } else {
+      root.classList.remove('dark');
     }
-    window.addEventListener('NEW_APP_VERSION', handleAppUpdate);
-
-    return () => {
-      if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.removeEventListener('message', handleMessage);
-      }
-      window.removeEventListener('NEW_APP_VERSION', handleAppUpdate);
-    };
-  }, []);
+    localStorage.setItem('app-theme', theme);
+  }, [theme]);
 
   // --- Handlers ---
+  const toggleTheme = () => setTheme(prev => prev === 'dark' ? 'light' : 'dark');
 
-  /**
-   * Refreshes the page to load the new service worker and data.
-   */
-  const handleRefresh = () => {
-    localStorage.setItem('lastManualRefresh', Date.now());
-    window.location.reload();
-  };
-
-  /**
-   * Selects a medication to view its details.
-   * Updates the 'Recent Medications' list in local storage.
-   * 
-   * @param {Object} med - The medication object selected.
-   */
-  const handleSelectMedication = (med) => {
-    setSelectedMedication(med);
-    setView('details');
+  const handleSelectMed = (med) => {
+    setSelectedMed(med);
     
-    // Update recent medications list (Limit to top 5)
-    const updatedRecent = [
-      med,
-      ...recentMedications.filter(m => m['Generic Name'] !== med['Generic Name'])
-    ].slice(0, 5);
-    setRecentMedications(updatedRecent);
-    localStorage.setItem('recentMedications', JSON.stringify(updatedRecent));
+    // Update Recent list
+    setRecentMeds(prev => {
+      const filtered = prev.filter(m => m.id !== med.id);
+      const updated = [med, ...filtered].slice(0, 5); // Keep last 5
+      localStorage.setItem('recent-meds', JSON.stringify(updated));
+      return updated;
+    });
   };
 
-  /**
-   * Navigates back to the medication list view.
-   */
-  const handleBack = () => {
-    setView('list');
-    setSelectedMedication(null);
+  const handleClearRecents = () => {
+    setRecentMeds([]);
+    localStorage.removeItem('recent-meds');
   };
 
-  /**
-   * Clears the recently viewed medications history.
-   */
-  const handleClearRecent = () => {
-    setRecentMedications([]);
-    localStorage.removeItem('recentMedications');
+  const handleSearchChange = (query) => {
+    setSearchQuery(query);
+    if (query.trim()) {
+      setActiveFilter(null);
+    }
   };
 
-  if (loading) return <div className="loading">Loading medications...</div>;
-  if (error) return <div className="error">Error loading data.</div>;
+  const toggleFilter = (filter) => {
+    if (activeFilter === filter) {
+      setActiveFilter(null);
+    } else {
+      setActiveFilter(filter);
+      setSearchQuery('');
+    }
+  };
+
+  // --- Filter Logic ---
+  const displayMeds = useMemo(() => {
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      return medications.filter(med => 
+        med.name && med.name.toLowerCase().includes(query)
+      );
+    }
+    
+    if (activeFilter === 'all') {
+      return medications;
+    }
+    
+    if (activeFilter === 'quota') {
+      return medications.filter(med => med.isQuota);
+    }
+    
+    return [];
+  }, [searchQuery, activeFilter, medications]);
+
+  if (error) return (
+    <div className="min-h-screen flex items-center justify-center bg-stone-100 dark:bg-gray-950 text-red-600">
+      <div className="text-center p-8 bg-white dark:bg-gray-900 rounded-3xl shadow-xl">
+        <h2 className="text-xl font-bold mb-2">Error loading data</h2>
+        <p>{error.message}</p>
+      </div>
+    </div>
+  );
 
   return (
-    <div className="app-container">
-      <Header />
-      <main>
-        {view === 'list' ? (
-          <>
-            <SearchBar 
-              data={data} 
-              setSearchResults={setSearchResults} 
-              searchTerm={searchTerm}
-              setSearchTerm={(term) => {
-                setSearchTerm(term);
-                if (term.trim() !== '') setActiveFilter(null);
-              }}
-            />
-            <RecentMedications 
-              medications={recentMedications} 
-              onSelect={handleSelectMedication}
-              onClear={handleClearRecent}
-            />
-            {/* Filter Buttons */}
-            <div className="button-group">
-               <button 
-                 id="showAllButton"
-                 className={activeFilter === 'all' ? 'active' : ''}
-                 onClick={() => {
-                   if (activeFilter === 'all') {
-                     setActiveFilter(null);
-                   } else {
-                     setActiveFilter('all');
-                     setSearchTerm('');
-                   }
-                 }}
-               >
-                 {activeFilter === 'all' ? 'Hide All Medications' : 'Show All Medications'}
-               </button>
-               <button 
-                 id="showQuotaButton"
-                 className={activeFilter === 'quota' ? 'active' : ''}
-                 onClick={() => {
-                   if (activeFilter === 'quota') {
-                     setActiveFilter(null);
-                   } else {
-                     setActiveFilter('quota');
-                     setSearchTerm('');
-                   }
-                 }}
-               >
-                 {activeFilter === 'quota' ? 'Hide Quota Medications' : 'Show Quota Medications'}
-               </button>
-            </div>
-            <MedicationList 
-              results={displayResults} 
-              onSelect={handleSelectMedication} 
-              searchTerm={searchTerm}
-            />
-          </>
-        ) : (
-          <MedicationDetails 
-            medication={selectedMedication} 
-            onBack={handleBack} 
-          />
-        )}
-      </main>
-      <Footer onOpenDisclaimer={() => setIsDisclaimerOpen(true)} />
-      {isDisclaimerOpen && (
-        <DisclaimerModal onClose={() => setIsDisclaimerOpen(false)} />
-      )}
-      {showUpdateNotification && (
-        <div className="update-notification">
-          <div className="update-text-container">
-            <div className="marquee-content">
-              <span>New medication data available! Please refresh to update your list. &nbsp;&nbsp;&nbsp;&nbsp;</span>
-              <span>New medication data available! Please refresh to update your list. &nbsp;&nbsp;&nbsp;&nbsp;</span>
-            </div>
-          </div>
-          <button id="refresh-button" onClick={handleRefresh}>Refresh Now</button>
+    <div className={`min-h-screen transition-colors duration-300 ${theme === 'dark' ? 'dark' : ''}`}>
+      <div className="min-h-screen relative bg-stone-100 text-stone-900 dark:bg-gray-950 dark:text-gray-100 font-sans selection:bg-indigo-500/30">
+        
+        {/* --- ELEGANT PATTERNED BACKGROUND --- */}
+        <div className="fixed inset-0 z-0 pointer-events-none">
+          {/* Subtle Dot Matrix Pattern */}
+          <div className="absolute inset-0 bg-[radial-gradient(#a8a29e_1px,transparent_1px)] dark:bg-[radial-gradient(#4b5563_1px,transparent_1px)] [background-size:24px_24px] opacity-40 dark:opacity-20"></div>
+          {/* Soft Mesh Gradient Glow */}
+          <div className="absolute -top-[20%] left-1/2 -translate-x-1/2 w-[80%] max-w-[800px] h-[50vh] bg-indigo-500/15 dark:bg-indigo-500/10 blur-[100px] rounded-full"></div>
         </div>
-      )}
+
+        {/* Content Wrapper to sit above the background */}
+        <div className="relative z-10 flex flex-col min-h-screen">
+          
+          <DisclaimerModal 
+            isOpen={showDisclaimer} 
+            onClose={() => {
+              setShowDisclaimer(false);
+              localStorage.setItem('disclaimer-agreed', 'true');
+            }} 
+          />
+          
+          {selectedMed && (
+            <MedicationDetails 
+              med={selectedMed} 
+              onClose={() => setSelectedMed(null)} 
+            />
+          )}
+
+          <Header 
+            theme={theme} 
+            toggleTheme={toggleTheme} 
+            setShowDisclaimer={() => setShowDisclaimer(true)} 
+          />
+          
+          <main className="flex-grow max-w-3xl w-full mx-auto px-4 sm:px-6 py-8 space-y-8 pb-24">
+             <div className="space-y-4">
+                <SearchBar searchQuery={searchQuery} setSearchQuery={handleSearchChange} />
+                
+                {/* Quick Filters */}
+                <div className="flex flex-wrap gap-2 px-1">
+                   <button 
+                     onClick={() => toggleFilter('all')}
+                     className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all border ${
+                       activeFilter === 'all' 
+                         ? 'bg-indigo-600 border-indigo-600 text-white shadow-md' 
+                         : 'bg-white/50 dark:bg-gray-900/50 border-stone-200 dark:border-gray-800 text-gray-600 dark:text-gray-400 hover:border-indigo-300 dark:hover:border-indigo-700'
+                     }`}
+                   >
+                     Show All
+                   </button>
+                   <button 
+                     onClick={() => toggleFilter('quota')}
+                     className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all border ${
+                       activeFilter === 'quota' 
+                         ? 'bg-yellow-500 border-yellow-500 text-white shadow-md' 
+                         : 'bg-white/50 dark:bg-gray-900/50 border-stone-200 dark:border-gray-800 text-gray-600 dark:text-gray-400 hover:border-yellow-300 dark:hover:border-yellow-700'
+                     }`}
+                   >
+                     Quota Items
+                   </button>
+                </div>
+             </div>
+               
+             {loading && <LoadingSpinner />}
+               
+             {!loading && (searchQuery || activeFilter) && (
+               <MedicationList filteredMeds={displayMeds} handleSelectMed={handleSelectMed} />
+             )}
+               
+             {!loading && !searchQuery && !activeFilter && (
+               <RecentMedications 
+                 recentMeds={recentMeds} 
+                 handleSelectMed={handleSelectMed} 
+                 handleClearRecents={handleClearRecents} 
+               />
+             )}
+          </main>
+        </div>
+      </div>
     </div>
   );
 }
 
-export default App;
+/**
+ * Simple LoadingSpinner component.
+ */
+function LoadingSpinner() {
+  return (
+    <div className="flex flex-col items-center justify-center py-12 space-y-4">
+      <div className="w-8 h-8 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div>
+      <p className="text-gray-500 dark:text-gray-400 text-sm font-medium animate-pulse">Loading formulary data...</p>
+    </div>
+  );
+}

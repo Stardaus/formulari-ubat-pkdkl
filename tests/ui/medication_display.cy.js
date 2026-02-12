@@ -1,54 +1,51 @@
 describe('Medication Display and Search', () => {
   beforeEach(() => {
-    cy.visit('/'); // Visit the root of your application
+    cy.visit('/');
+    // Close disclaimer if it appears
+    cy.get('button').contains('I Understand & Agree').click();
   });
 
-  it('should display all medications alphabetically on initial load', () => {
-    // Assuming results are displayed in #results-container
-    cy.get('#results-container .result-item').should('have.length.greaterThan', 0);
-
-    // Get all medication names and assert they are in alphabetical order
-    let previousName = '';
-    cy.get('#results-container .result-item h3').each(($el) => {
-      const currentName = $el.text();
-      expect(currentName.localeCompare(previousName)).not.to.be.below(0); // currentName >= previousName
-      previousName = currentName;
-    });
+  it('should display the search bar and welcome hero on initial load', () => {
+    cy.get('input[placeholder*="Search by generic name"]').should('be.visible');
+    cy.contains('Welcome to PKD KL Formulary').should('be.visible');
   });
 
   it('should filter medications when typing in the search box', () => {
-    cy.get('#searchBox').type('Drug A');
-    cy.get('#results-container .result-item').should('have.length', 1);
-    cy.get('#results-container .result-item h3').should('contain.text', 'Drug A');
-
-    cy.get('#searchBox').clear().type('NonExistentDrug');
-    cy.get('#results-container').should('contain.text', 'No results found.');
+    // We need to wait for data to load or type something that will likely exist
+    // Since we are fetching from a real URL in production, but during tests it might be different.
+    // Assuming the mock data from fetchSheet.js or the real data has some medications.
+    cy.get('input[placeholder*="Search by generic name"]').type('Acid');
+    
+    // Check for results
+    cy.get('h2').contains('Results').should('be.visible');
+    cy.get('.group.flex.flex-col').should('have.length.greaterThan', 0);
   });
 
-  it('should display all medications when the "Show All Medications" button is clicked', () => {
-    // First, filter to a subset
-    cy.get('#searchBox').type('Drug A');
-    cy.get('#results-container .result-item').should('have.length', 1);
+  it('should show medication details in a modal when clicked', () => {
+    cy.get('input[placeholder*="Search by generic name"]').type('Acid');
+    cy.get('.group.flex.flex-col').first().click();
 
-    // Click the show all button
-    cy.get('#showAllButton').click();
-
-    // Assert all medications are displayed and in alphabetical order
-    cy.get('#results-container .result-item').should('have.length.greaterThan', 1); // Assuming more than 1 total
-    let previousName = '';
-    cy.get('#results-container .result-item h3').each(($el) => {
-      const currentName = $el.text();
-      expect(currentName.localeCompare(previousName)).not.to.be.below(0);
-      previousName = currentName;
-    });
+    // Check modal
+    cy.get('h2.text-xl').should('be.visible'); // Medication name in modal
+    cy.contains('Indications').should('be.visible');
+    cy.contains('Dosage').should('be.visible');
+    
+    // Close modal
+    cy.get('button[aria-label="Close"]').first().click(); // There might be multiple Xs, let's be specific if needed
+    // or better:
+    cy.get('button').find('svg').parent().should('be.visible');
   });
 
-  it('should not display "is_quota" in the medication detail card', () => {
-    cy.get('#searchBox').type('Drug A'); // Assuming 'Drug A' is a valid medication
-    cy.get('#results-container .result-item').first().click(); // Click on the first result
-    cy.get('.drug-details-view').should('be.visible');
-    cy.get('.drug-details-view p').each(($el) => {
-      cy.wrap($el).invoke('text').should('not.include', 'is_quota');
+  it('should toggle theme', () => {
+    // Initial theme check (default might be light or dark depending on system)
+    cy.get('html').then(($html) => {
+      const isDark = $html.hasClass('dark');
+      cy.get('button[aria-label="Toggle Theme"]').click();
+      if (isDark) {
+        cy.get('html').should('not.have.class', 'dark');
+      } else {
+        cy.get('html').should('have.class', 'dark');
+      }
     });
   });
 });

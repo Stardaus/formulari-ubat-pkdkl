@@ -3,38 +3,45 @@ import { describe, it, expect, vi } from 'vitest';
 import SearchBar from '../../src/components/SearchBar';
 import React from 'react';
 
-const mockData = [
-  { "Generic Name": "Drug A", Brand: "Brand A", Category: "Cat A", "FUKKM System/Group": "Grp 1" },
-  { "Generic Name": "Drug B", Brand: "Brand B", Category: "Cat B", "FUKKM System/Group": "Grp 2" },
-];
+// Mock lucide-react icons
+vi.mock('lucide-react', () => ({
+  Search: () => <div data-testid="search-icon" />,
+  X: () => <div data-testid="clear-icon" />
+}));
 
 describe('SearchBar', () => {
   it('renders correctly', () => {
     render(
       <SearchBar 
-        data={mockData} 
-        setSearchResults={() => {}} 
-        searchTerm="" 
-        setSearchTerm={() => {}} 
+        searchQuery="" 
+        setSearchQuery={() => {}} 
       />
     );
-    expect(screen.getByPlaceholderText(/search for a drug/i)).toBeInTheDocument();
+    expect(screen.getByPlaceholderText(/search by generic name/i)).toBeInTheDocument();
   });
 
-  it('calls setSearchTerm on input change', () => {
-    const setSearchTerm = vi.fn();
+  it('calls setSearchQuery on input change', () => {
+    const setSearchQuery = vi.fn();
     render(
       <SearchBar 
-        data={mockData} 
-        setSearchResults={() => {}} 
-        searchTerm="" 
-        setSearchTerm={setSearchTerm} 
+        searchQuery="" 
+        setSearchQuery={setSearchQuery} 
       />
     );
     
-    const input = screen.getByPlaceholderText(/search for a drug/i);
+    const input = screen.getByPlaceholderText(/search by generic name/i);
     fireEvent.change(input, { target: { value: 'Drug A' } });
     
-    expect(setSearchTerm).toHaveBeenCalledWith('Drug A');
+    expect(setSearchQuery).toHaveBeenCalledWith('Drug A');
+  });
+
+  it('renders clear button when searchQuery is not empty', () => {
+    render(
+      <SearchBar 
+        searchQuery="Drug A" 
+        setSearchQuery={() => {}} 
+      />
+    );
+    expect(screen.getByTestId('clear-icon')).toBeInTheDocument();
   });
 });

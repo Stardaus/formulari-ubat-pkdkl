@@ -1,8 +1,8 @@
 import { describe, test, expect, beforeAll, afterAll, beforeEach, afterEach, vi } from "vitest";
-import { fetchAndParseSheet } from "../../src/utils/fetchSheet.js"; // Import from new location
+import { fetchAndParseSheet } from "../../src/utils/fetchSheet.js";
 
 const mockCsvData = `
-"Generic Name","Brand","FUKKM System/Group","MDC","NEML","Method of Purchase","Category","Indications","Prescribing Restrictions","Dosage","Adverse Reaction","Contraindications","Interactions","Precautions","is_quota"
+"Generic Name","MAL_Brands","FUKKM System/Group","MDC","NEML","Method of Purchase","Category","Indications","Prescribing Restrictions","Dosage","Adverse Reaction","Contraindications","Interactions","Precautions","is_quota"
 "Drug A","Brand A","Group 1","MDC1","Yes","LP","A/KK","Indications A","None","Dosage A","AR A","CI A","Int A","Prec A","TRUE"
 "Drug B","Brand B","Group 2","MDC2","No","APPL","B","Indications B","None","Dosage B","AR B","CI B","Int B","Prec B","FALSE"
 `;
@@ -10,51 +10,57 @@ const mockCsvData = `
 describe("Data Fetching and Parsing with fetchAndParseSheet (PapaParse)", () => {
   let originalFetch;
   let consoleErrorSpy;
-  let originalPapa; // Added for Papa mock
+  let originalPapa;
 
   beforeAll(() => {
-    // Mock console.error to prevent Jest from failing on expected errors
     consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
 
-    // Mock Papa.parse
     originalPapa = global.Papa;
     global.Papa = {
       parse: vi.fn((csvString, config) => {
         let parsedData = [];
         let errors = [];
 
-        if (
-          csvString.includes(`"Generic Name","Brand","Category","is_quota"`)
-        ) {
-          // Mock for the main test case
+        if (csvString.includes(`"Generic Name","MAL_Brands","FUKKM System/Group","MDC","NEML","Method of Purchase","Category","Indications","Prescribing Restrictions","Dosage","Adverse Reaction","Contraindications","Interactions","Precautions","is_quota"`)) {
           parsedData = [
             {
               "Generic Name": "Drug A",
-              Brand: "Brand A",
-              Category: "A/KK",
-              is_quota: "TRUE",
+              "MAL_Brands": "Brand A",
+              "FUKKM System/Group": "Group 1",
+              "MDC": "MDC1",
+              "NEML": "Yes",
+              "Method of Purchase": "LP",
+              "Category": "A/KK",
+              "Indications": "Indications A",
+              "Prescribing Restrictions": "None",
+              "Dosage": "Dosage A",
+              "Adverse Reaction": "AR A",
+              "Contraindications": "CI A",
+              "Interactions": "Int A",
+              "Precautions": "Prec A",
+              "is_quota": "TRUE",
             },
             {
               "Generic Name": "Drug B",
-              Brand: "Brand B",
-              Category: "B",
-              is_quota: "FALSE",
-            },
-            {
-              "Generic Name": "Drug C",
-              Brand: "Brand C",
-              Category: "A/KK",
-              is_quota: "TRUE",
-            },
+              "MAL_Brands": "Brand B",
+              "FUKKM System/Group": "Group 2",
+              "MDC": "MDC2",
+              "NEML": "No",
+              "Method of Purchase": "APPL",
+              "Category": "B",
+              "Indications": "Indications B",
+              "Prescribing Restrictions": "None",
+              "Dosage": "Dosage B",
+              "Adverse Reaction": "AR B",
+              "Contraindications": "CI B",
+              "Interactions": "Int B",
+              "Precautions": "Prec B",
+              "is_quota": "FALSE",
+            }
           ];
         } else if (csvString.includes(`"malformed,csv"`)) {
-          // Mock for malformed CSV test case
           parsedData = [];
           errors = [{ type: "ParseError", code: "UndetectableDelimiter" }];
-        } else {
-          // Default parsing for other cases if needed, or throw an error
-          // For now, we'll just return empty for unexpected CSV
-          parsedData = [];
         }
 
         if (config.complete) {
@@ -67,21 +73,19 @@ describe("Data Fetching and Parsing with fetchAndParseSheet (PapaParse)", () => 
 
   afterAll(() => {
     consoleErrorSpy.mockRestore();
-    global.Papa = originalPapa; // Restore original Papa
+    global.Papa = originalPapa;
   });
 
   beforeEach(() => {
-    // Mock fetch to return a sample CSV string that PapaParse can handle
     originalFetch = global.fetch;
     global.fetch = vi.fn(() =>
       Promise.resolve({
         ok: true,
         status: 200,
         text: () =>
-          Promise.resolve(`"Generic Name","Brand","Category","is_quota"
-"Drug A","Brand A","A/KK","TRUE"
-"Drug B","Brand B","B","FALSE"
-"Drug C","Brand C","A/KK","TRUE"
+          Promise.resolve(`"Generic Name","MAL_Brands","FUKKM System/Group","MDC","NEML","Method of Purchase","Category","Indications","Prescribing Restrictions","Dosage","Adverse Reaction","Contraindications","Interactions","Precautions","is_quota"
+"Drug A","Brand A","Group 1","MDC1","Yes","LP","A/KK","Indications A","None","Dosage A","AR A","CI A","Int A","Prec A","TRUE"
+"Drug B","Brand B","Group 2","MDC2","No","APPL","B","Indications B","None","Dosage B","AR B","CI B","Int B","Prec B","FALSE"
 `),
       }),
     );
@@ -94,16 +98,16 @@ describe("Data Fetching and Parsing with fetchAndParseSheet (PapaParse)", () => 
   test("should fetch and parse CSV data correctly using PapaParse", async () => {
     const allData = await fetchAndParseSheet("http://mock.url/sheet.csv");
 
-    expect(allData).toHaveLength(3);
-    expect(allData[0]["Generic Name"]).toBe("Drug A");
-    expect(allData[0].Category).toBe("A/KK");
-    expect(allData[0].is_quota).toBe(true);
-    expect(allData[1]["Generic Name"]).toBe("Drug B");
-    expect(allData[1].Category).toBe("B");
-    expect(allData[1].is_quota).toBe(false);
-    expect(allData[2]["Generic Name"]).toBe("Drug C");
-    expect(allData[2].Category).toBe("A/KK");
-    expect(allData[2].is_quota).toBe(true);
+    expect(allData).toHaveLength(2);
+    expect(allData[0].name).toBe("Drug A");
+    expect(allData[0].prescriberCategory).toBe("A/KK");
+    expect(allData[0].isQuota).toBe(true);
+    expect(allData[0].id).toBe("1");
+
+    expect(allData[1].name).toBe("Drug B");
+    expect(allData[1].prescriberCategory).toBe("B");
+    expect(allData[1].isQuota).toBe(false);
+    expect(allData[1].id).toBe("2");
   });
 
   test("should handle HTTP errors during fetch", async () => {
@@ -115,8 +119,7 @@ describe("Data Fetching and Parsing with fetchAndParseSheet (PapaParse)", () => 
       }),
     );
 
-    const allData = await fetchAndParseSheet("http://mock.url/nonexistent.csv");
-    expect(allData).toEqual([]); // Should return empty array on error
+    await expect(fetchAndParseSheet("http://mock.url/nonexistent.csv")).rejects.toThrow("HTTP error! status: 404");
   });
 
   test("should handle parsing errors (e.g., malformed CSV)", async () => {
@@ -124,11 +127,10 @@ describe("Data Fetching and Parsing with fetchAndParseSheet (PapaParse)", () => 
       Promise.resolve({
         ok: true,
         status: 200,
-        text: () => Promise.resolve(`"malformed,csv"\n"1,2"`), // Malformed CSV for PapaParse
+        text: () => Promise.resolve(`"malformed,csv"\n"1,2"`),
       }),
     );
 
-    const allData = await fetchAndParseSheet("http://mock.url/malformed.csv");
-    expect(allData).toEqual([]); // Updated expectation
+    await expect(fetchAndParseSheet("http://mock.url/malformed.csv")).rejects.toThrow("CSV parsing errors encountered.");
   });
 });

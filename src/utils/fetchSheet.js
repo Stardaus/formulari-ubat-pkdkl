@@ -48,19 +48,30 @@ export function fetchAndParseSheet(sheetUrl) {
                   return genericName && genericName !== "data_version";
                 })
                 // 2. Transformation Logic:
-                // Convert the string "TRUE" in 'is_quota' column to a JavaScript boolean.
-                .map((row) => {
-                  const isQuotaBoolean = row.is_quota === "TRUE";
-                  return {
-                    ...row,
-                    is_quota: isQuotaBoolean,
-                  };
-                })
+                // Map to camelCase keys used by the new UI
+                .map((row, index) => ({
+                  id: String(index + 1),
+                  name: row["Generic Name"],
+                  malBrands: row["MAL_Brands"],
+                  fukkmSystemGroup: row["FUKKM System/Group"],
+                  mdc: row["MDC"],
+                  neml: row["NEML"],
+                  methodOfPurchase: row["Method of Purchase"],
+                  prescriberCategory: row["Category"],
+                  indications: row["Indications"],
+                  prescribingRestrictions: row["Prescribing Restrictions"],
+                  dosage: row["Dosage"],
+                  adverseReaction: row["Adverse Reaction"],
+                  contraindications: row["Contraindications"],
+                  interactions: row["Interactions"],
+                  precautions: row["Precautions"],
+                  isQuota: row["is_quota"]?.trim().toUpperCase() === "TRUE"
+                }))
                 // 3. Sorting Logic:
-                // Sort the array alphabetically by 'Generic Name' for display.
+                // Sort the array alphabetically by 'name' for display.
                 .sort((a, b) => {
-                  const nameA = a["Generic Name"].toUpperCase();
-                  const nameB = b["Generic Name"].toUpperCase();
+                  const nameA = a.name.toUpperCase();
+                  const nameB = b.name.toUpperCase();
                   if (nameA < nameB) {
                     return -1;
                   }
