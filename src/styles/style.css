@@ -2,19 +2,38 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --sat: env(safe-area-inset-top, 0px);
+  --sab: env(safe-area-inset-bottom, 0px);
+  --sar: env(safe-area-inset-right, 0px);
+  --sal: env(safe-area-inset-left, 0px);
+}
+
 @layer base {
   html, body {
     @apply transition-colors duration-300;
-  }
-  
-  /* Light mode (default) */
-  html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    /* Ensure background covers the entire viewport including safe areas */
     background-color: #f5f5f4; /* stone-100 */
   }
 
-  /* Dark mode */
   html.dark, html.dark body {
     background-color: #030712; /* gray-950 */
+  }
+
+  /* Apply safe area padding to the header globally */
+  header {
+    padding-top: var(--sat);
+  }
+
+  /* Apply safe area padding to main content for bottom home indicators */
+  main {
+    padding-bottom: var(--sab);
+    padding-left: var(--sal);
+    padding-right: var(--sar);
   }
 }
 

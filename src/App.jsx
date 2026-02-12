@@ -188,7 +188,10 @@ export default function App() {
           />
 
           {newDataAvailable && (
-            <div className="sticky top-16 z-20 w-full bg-indigo-600 text-white py-3 px-4 shadow-lg animate-in slide-in-from-top duration-300">
+            <div 
+              className="sticky z-20 w-full bg-indigo-600 text-white py-3 px-4 shadow-lg animate-in slide-in-from-top duration-300"
+              style={{ top: `calc(4rem + var(--sat, 0px))` }}
+            >
               <div className="max-w-3xl mx-auto flex items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
                   <div className="p-1.5 bg-white/20 rounded-lg">

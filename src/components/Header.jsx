@@ -7,13 +7,7 @@ import { Pill, Info, Sun, Moon } from 'lucide-react';
 function Header({ theme, toggleTheme, setShowDisclaimer }) {
   return (
     <header className="sticky top-0 z-30 w-full backdrop-blur-xl bg-stone-100/70 dark:bg-gray-950/70 border-b border-stone-200/50 dark:border-gray-800/50 transition-colors">
-      <div 
-        className="max-w-3xl mx-auto px-4 sm:px-6 flex items-center justify-between"
-        style={{ 
-          height: `calc(4rem + env(safe-area-inset-top, 0px))`,
-          paddingTop: `env(safe-area-inset-top, 0px)`
-        }}
-      >
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 min-h-[4rem] flex items-center justify-between">
         <div className="flex items-center gap-2">
           <div className="p-2 bg-indigo-600 rounded-xl text-white shadow-sm">
             <Pill size={20} strokeWidth={2.5} />
