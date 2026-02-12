@@ -85,15 +85,17 @@ export default function App() {
     }
     localStorage.setItem('app-theme', theme);
 
-    // Update theme-color meta tag dynamically
+    // Update theme-color meta tag dynamically to sync browser UI (notch/status bar/overscroll)
     const themeColor = theme === 'dark' ? '#030712' : '#f5f5f4';
-    let meta = document.querySelector('meta[name="theme-color"]:not([media])');
-    if (!meta) {
-      meta = document.createElement('meta');
-      meta.name = 'theme-color';
-      document.getElementsByTagName('head')[0].appendChild(meta);
+    const meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) {
+      meta.setAttribute('content', themeColor);
+    } else {
+      const newMeta = document.createElement('meta');
+      newMeta.name = 'theme-color';
+      newMeta.content = themeColor;
+      document.head.appendChild(newMeta);
     }
-    meta.content = themeColor;
   }, [theme]);
 
   // --- Handlers ---
