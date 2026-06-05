@@ -28,20 +28,67 @@ self.addEventListener("install", (event) => {
 self.addEventListener("activate", (event) => {
   const cacheWhitelist = [CACHE_NAME];
   event.waitUntil(
-    caches
-      .keys()
-      .then((cacheNames) =>
-        Promise.all(
-          cacheNames.map((cacheName) => {
-            if (cacheWhitelist.indexOf(cacheName) === -1) {
-              return caches.delete(cacheName);
-            }
-          }),
+    Promise.all([
+      // 1. Delete outdated caches (if CACHE_NAME changed)
+      caches
+        .keys()
+        .then((cacheNames) =>
+          Promise.all(
+            cacheNames.map((cacheName) => {
+              if (cacheWhitelist.indexOf(cacheName) === -1) {
+                return caches.delete(cacheName);
+              }
+            }),
+          ),
         ),
-      )
-      .then(() => self.clients.claim()),
+      // 2. Prune old hashed assets inside the active cache
+      pruneStaleAssets()
+    ]).then(() => self.clients.claim()),
   );
 });
+
+/**
+ * Prunes old Vite build files (JS/CSS) from the cache by reading index.html.
+ */
+async function pruneStaleAssets() {
+  try {
+    const cache = await caches.open(CACHE_NAME);
+    const indexResponse = await cache.match("index.html");
+    if (!indexResponse) return;
+
+    const htmlText = await indexResponse.text();
+    
+    // Match any referenced build assets (e.g., assets/index-CSO_x4q0.js)
+    const assetRegex = /assets\/index-[a-zA-Z0-9_-]+\.(js|css)/g;
+    const referencedAssets = new Set();
+    let match;
+    
+    while ((match = assetRegex.exec(htmlText)) !== null) {
+      referencedAssets.add(match[0]);
+    }
+
+    // List all cached files
+    const cachedRequests = await cache.keys();
+    for (const request of cachedRequests) {
+      const url = new URL(request.url);
+      
+      // If it is a built asset file
+      if (url.pathname.includes('/assets/index-')) {
+        const assetFilenameMatch = url.pathname.match(/assets\/index-[a-zA-Z0-9_-]+\.(js|css)/);
+        if (assetFilenameMatch) {
+          const filename = assetFilenameMatch[0];
+          // If it is not referenced in the current index.html, delete it
+          if (!referencedAssets.has(filename)) {
+            console.log(`[SW] Pruning stale asset: ${filename}`);
+            await cache.delete(request);
+          }
+        }
+      }
+    }
+  } catch (error) {
+    console.error("[SW] Failed to prune stale assets:", error);
+  }
+}
 
 // --- Message Handling ---
 self.addEventListener("message", (event) => {
@@ -140,9 +187,24 @@ self.addEventListener("fetch", (event) => {
     } else {
       // STRATEGY: Cache First for assets (Images, CSS, JS)
       event.respondWith(
-        caches
-          .match(event.request)
-          .then((response) => response || fetch(event.request)),
+        caches.match(event.request).then((response) => {
+          if (response) return response;
+          
+          return fetch(event.request).then((networkResponse) => {
+            // Only cache valid GET responses from our origin or Google Fonts
+            const isGet = event.request.method === "GET";
+            const isLocal = event.request.url.startsWith(self.location.origin);
+            const isFont = event.request.url.includes("fonts.googleapis.com") || event.request.url.includes("fonts.gstatic.com");
+            
+            if (networkResponse.ok && isGet && (isLocal || isFont)) {
+              const responseClone = networkResponse.clone();
+              caches.open(CACHE_NAME).then((cache) => {
+                cache.put(event.request, responseClone);
+              });
+            }
+            return networkResponse;
+          });
+        })
       );
     }
   }
