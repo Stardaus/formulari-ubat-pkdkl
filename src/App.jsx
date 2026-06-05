@@ -47,6 +47,47 @@ export default function App() {
   });
 
   const [newDataAvailable, setNewDataAvailable] = useState(false);
+  const [swVersion, setSwVersion] = useState('Checking...');
+
+  // Effect to query active service worker version
+  useEffect(() => {
+    if ('serviceWorker' in navigator) {
+      const getVersion = () => {
+        navigator.serviceWorker.ready.then((registration) => {
+          const activeWorker = registration.active;
+          if (activeWorker) {
+            const messageChannel = new MessageChannel();
+            messageChannel.port1.onmessage = (event) => {
+              if (event.data && event.data.version) {
+                setSwVersion(event.data.version);
+              }
+            };
+            activeWorker.postMessage({ type: 'GET_VERSION' }, [messageChannel.port2]);
+          } else {
+            setSwVersion('No active worker yet');
+          }
+        }).catch((err) => {
+          console.error("SW ready failed:", err);
+          setSwVersion('Error checking');
+        });
+      };
+
+      // Query immediately once loaded
+      getVersion();
+
+      // Query again when controller changes (e.g. update takes over)
+      const handleControllerChange = () => {
+        getVersion();
+      };
+      navigator.serviceWorker.addEventListener('controllerchange', handleControllerChange);
+
+      return () => {
+        navigator.serviceWorker.removeEventListener('controllerchange', handleControllerChange);
+      };
+    } else {
+      setSwVersion('Not supported');
+    }
+  }, []);
 
   // --- Effects ---
   // Listen for Service Worker messages
@@ -264,6 +305,12 @@ export default function App() {
                />
              )}
           </main>
+          
+          <footer className="relative z-10 py-6 text-center text-xs text-stone-400 dark:text-gray-600 border-t border-stone-200/20 dark:border-gray-800/20">
+            <p>Formulari PKD Kuala Langat (unofficial)</p>
+            <p className="mt-1 font-mono text-[10px]">Service Worker: {swVersion}</p>
+          </footer>
+
         </div>
       </div>
     </div>
